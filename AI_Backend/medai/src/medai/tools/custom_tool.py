@@ -1,16 +1,13 @@
+import os
+import chromadb
 from crewai.tools import BaseTool
 from typing import Type
 from pydantic import BaseModel, Field
-
+from chromadb.utils import embedding_functions
 
 class MedicalKnowledgeInput(BaseModel):
     """Input schema for the MedicalKnowledgeRetrieverTool."""
-
-    query: str = Field(
-        ...,
-        description="The medical topic or specific question to search for in the knowledge base.",
-    )
-
+    query: str = Field(..., description="The medical topic or specific question to search for in the knowledge base.")
 
 class MedicalKnowledgeRetrieverTool(BaseTool):
     name: str = "Medical Knowledge Retriever"
@@ -22,29 +19,38 @@ class MedicalKnowledgeRetrieverTool(BaseTool):
 
     def _run(self, query: str) -> str:
         """
-        Connects to the ChromaDB vector store and performs a hybrid search
-        to find the most relevant medical documents.
+        Connects to the ChromaDB vector store and performs a similarity search
+        to find the most relevant medical document chunks.
         """
         print(f"INFO: Searching medical knowledge base for query: '{query}'")
-
-        placeholder_output = (
-            f"Placeholder Output for Query: '{query}'\n\n"
-            "Retrieved Document 1: Study on clinical presentation of migraines. Source: Journal of Medicine, 2023.\n"
-            "Retrieved Document 2: NICE guidelines for headache management. Source: NICE-guidelines-2022.\n"
-            "Retrieved Document 3: Research paper on differential diagnosis for acute headaches. Source: The Lancet, 2021."
+        
+        client = chromadb.PersistentClient(path="db")
+        openai_ef = embedding_functions.OpenAIEmbeddingFunction(
+            api_key=os.getenv("OPENAI_API_KEY"),
+            model_name="text-embedding-3-small"
         )
-        return placeholder_output
 
-    def format_results(self, results: list) -> str:
-        """Helper function to format a list of document chunks into a single string."""
-        formatted_string = ""
-        for i, doc in enumerate(results):
-            
-            source = doc.metadata.get("source", "Unknown")
-            publication_date = doc.metadata.get("publication_date", "N/A")
-            formatted_string += f"Retrieved Document {i+1}: {doc.content}\nSource: {source}, Published: {publication_date}\n\n"
+        collection = client.get_collection(
+            name="medical_guidelines",
+            embedding_function=openai_ef
+        )
+    
+        results = collection.query(
+            query_texts=[query],
+            n_results=3
+        )
+        
+        return self._format_results(results)
 
-        if not formatted_string:
+    def _format_results(self, results: dict) -> str:
+        """Helper function to format ChromaDB query results into a single string."""
+        documents = results.get('documents', [[]])[0]
+        
+        if not documents:
             return "No relevant documents found in the medical knowledge base."
-
+        
+        formatted_string = ""
+        for i, doc in enumerate(documents):
+            formatted_string += f"Retrieved Document {i+1}:\n{doc}\n\n"
+            
         return formatted_string.strip()
