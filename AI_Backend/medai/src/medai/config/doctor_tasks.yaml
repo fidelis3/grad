@@ -7,6 +7,7 @@ symptom_structuring_task:
     - Severity: {severity}
     - Medical History: {medical_history}
     - Additional Notes: {additional_notes}
+    - current_date
     
     Do not invent, assume, or add extra details that are not explicitly
     given. Your role is to faithfully restructure the provided information
@@ -108,14 +109,38 @@ contraindication_task:
 
 final_report_task:
   description: >
-    Synthesize all the findings from the symptom structuring, differential diagnosis, research, guideline
-    compliance, and contraindication tasks. Create a single, professional, and fully-cited report for the
-    clinician. The report must be a comprehensive summary, formatted in clear markdown, and include a section
-    for each key finding.
-  expected_output: >
-    A detailed, well-structured, and easy-to-read markdown report for a doctor. The report must include a title,
-    a summary of symptoms, the final differential diagnosis with evidence, guideline compliance notes, and a
-    section on contraindications. All claims must have citations linked to the research findings.
+    Synthesize all the findings from the preceding tasks (symptom summary, differential diagnosis, research, guideline
+    compliance, and contraindications). Your final output MUST be a single, professional, and fully-cited clinical report
+    formatted in clean markdown. Do not include any conversational text, introductions, or summaries before the main report title.
+  expected_output: >-
+    A perfectly formatted markdown document. The document must start IMMEDIATELY with the main title (`# Final Medical Report...`) and contain nothing before it.
+    Use the following structure exactly:
+    
+    # Final Medical Report: [Insert Concise Title Based on Diagnosis]
+
+    **Patient:** [Insert Patient Name]
+
+    **Date:** {current_date}
+
+    **Presenting Complaint:** [Insert Presented Complaint]
+
+    ## Summary of Symptoms
+    [A concise paragraph summarizing the patient's presentation based on the initial structured summary.]
+
+    ## Differential Diagnosis
+    [A markdown table or a numbered list of the potential diagnoses, including likelihood scores and rationales.]
+
+    ## Evidence and Citations
+    [A bulleted list summarizing the key findings from the research task for the primary diagnosis, including citations.]
+
+    ## Guideline Compliance
+    [A brief statement on how the findings align with the retrieved clinical guidelines.]
+
+    ## Contraindications
+    [A section detailing any potential contraindications identified.]
+
+    ## Recommended Next Steps
+    [A numbered list of clear, actionable next steps for the clinician.]
   agent: final_report_agent
   context:
     - symptom_structuring_task

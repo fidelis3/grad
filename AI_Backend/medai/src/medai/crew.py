@@ -1,15 +1,13 @@
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
-
-from medai.tools.custom_tool import MedicalKnowledgeRetrieverTool
-
+from .tools.custom_tool import MedicalKnowledgeRetrieverTool
 
 @CrewBase
 class MedaiCrew:
     """Medai crew"""
 
-    agents_config = "config/agents.yaml"
-    tasks_config = "config/tasks.yaml"
+    agents_config = "config/doctor_agents.yaml"
+    tasks_config = "config/doctor_tasks.yaml"
 
     medical_retriever_tool = MedicalKnowledgeRetrieverTool()
 
@@ -108,5 +106,39 @@ class MedaiCrew:
             tasks=self.tasks,
             process=Process.sequential,
             memory=True,
+            verbose=True,
+        )
+
+@CrewBase
+class PatientTriageCrew:
+    """Crew for safe, patient-facing triage and education."""
+
+    agents_config = "config/triage_agents.yaml"
+    tasks_config = "config/triage_tasks.yaml"
+
+    medical_retriever_tool = MedicalKnowledgeRetrieverTool()
+
+    @agent
+    def patient_triage_agent(self) -> Agent:
+        return Agent(
+            config=self.agents_config["patient_triage_agent"],
+            tools=[self.medical_retriever_tool],
+            verbose=True,
+            allow_delegation=False,
+        )
+
+    @task
+    def patient_triage_task(self) -> Task:
+        return Task(
+            config=self.tasks_config["patient_triage_task"],
+            agent=self.patient_triage_agent(),
+            output_file="patient_triage_report.md",
+        )
+
+    @crew
+    def crew(self) -> Crew:
+        return Crew(
+            agents=[self.patient_triage_agent()],
+            tasks=[self.patient_triage_task()],
             verbose=True,
         )
