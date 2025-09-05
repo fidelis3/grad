@@ -1,64 +1,112 @@
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
-from crewai.agents.agent_builder.base_agent import BaseAgent
-from typing import List
-# If you want to run a snippet of code before or after the crew starts,
-# you can use the @before_kickoff and @after_kickoff decorators
-# https://docs.crewai.com/concepts/crews#example-crew-class-with-decorators
+
+from medai.tools.custom_tool import MedicalKnowledgeRetrieverTool
+
 
 @CrewBase
-class Medai():
+class MedaiCrew:
     """Medai crew"""
 
-    agents: List[BaseAgent]
-    tasks: List[Task]
+    agents_config = "config/agents.yaml"
+    tasks_config = "config/tasks.yaml"
 
-    # Learn more about YAML configuration files here:
-    # Agents: https://docs.crewai.com/concepts/agents#yaml-configuration-recommended
-    # Tasks: https://docs.crewai.com/concepts/tasks#yaml-configuration-recommended
-    
-    # If you would like to add tools to your agents, you can learn more about it here:
-    # https://docs.crewai.com/concepts/agents#agent-tools
+    medical_retriever_tool = MedicalKnowledgeRetrieverTool()
+
     @agent
-    def researcher(self) -> Agent:
+    def symptom_analyzer_agent(self) -> Agent:
         return Agent(
-            config=self.agents_config['researcher'], # type: ignore[index]
-            verbose=True
+            config=self.agents_config["symptom_analyzer_agent"],
+            verbose=True,
+            allow_delegation=False,
         )
 
     @agent
-    def reporting_analyst(self) -> Agent:
+    def differential_diagnosis_agent(self) -> Agent:
         return Agent(
-            config=self.agents_config['reporting_analyst'], # type: ignore[index]
-            verbose=True
+            config=self.agents_config["differential_diagnosis_agent"],
+            verbose=True,
+            allow_delegation=False,
         )
 
-    # To learn more about structured task outputs,
-    # task dependencies, and task callbacks, check out the documentation:
-    # https://docs.crewai.com/concepts/tasks#overview-of-a-task
+    @agent
+    def research_agent(self) -> Agent:
+        return Agent(
+            config=self.agents_config["research_agent"],
+            tools=[self.medical_retriever_tool],
+            verbose=True,
+        )
+
+    @agent
+    def guideline_compliance_agent(self) -> Agent:
+        return Agent(
+            config=self.agents_config["guideline_compliance_agent"],
+            tools=[self.medical_retriever_tool],
+            verbose=True,
+        )
+
+    @agent
+    def contraindication_ddi_agent(self) -> Agent:
+        return Agent(
+            config=self.agents_config["contraindication_ddi_agent"],
+            tools=[self.medical_retriever_tool],
+            verbose=True,
+        )
+
+    @agent
+    def final_report_agent(self) -> Agent:
+        return Agent(config=self.agents_config["final_report_agent"], verbose=True)
+
+    @task
+    def symptom_structuring_task(self) -> Task:
+        return Task(
+            config=self.tasks_config["symptom_structuring_task"],
+            agent=self.symptom_analyzer_agent(),
+        )
+
+    @task
+    def differential_diagnosis_task(self) -> Task:
+        return Task(
+            config=self.tasks_config["differential_diagnosis_task"],
+            agent=self.differential_diagnosis_agent(),
+        )
+
     @task
     def research_task(self) -> Task:
         return Task(
-            config=self.tasks_config['research_task'], # type: ignore[index]
+            config=self.tasks_config["research_task"],
+            agent=self.research_agent(),
         )
 
     @task
-    def reporting_task(self) -> Task:
+    def guideline_compliance_task(self) -> Task:
         return Task(
-            config=self.tasks_config['reporting_task'], # type: ignore[index]
-            output_file='report.md'
+            config=self.tasks_config["guideline_compliance_task"],
+            agent=self.guideline_compliance_agent(),
+        )
+
+    @task
+    def contraindication_task(self) -> Task:
+        return Task(
+            config=self.tasks_config["contraindication_task"],
+            agent=self.contraindication_ddi_agent(),
+        )
+
+    @task
+    def final_report_task(self) -> Task:
+        return Task(
+            config=self.tasks_config["final_report_task"],
+            agent=self.final_report_agent(),
+            output_file="final_diagnosis_report.md",
         )
 
     @crew
     def crew(self) -> Crew:
         """Creates the Medai crew"""
-        # To learn how to add knowledge sources to your crew, check out the documentation:
-        # https://docs.crewai.com/concepts/knowledge#what-is-knowledge
-
         return Crew(
-            agents=self.agents, # Automatically created by the @agent decorator
-            tasks=self.tasks, # Automatically created by the @task decorator
+            agents=self.agents,
+            tasks=self.tasks,
             process=Process.sequential,
+            memory=True,
             verbose=True,
-            # process=Process.hierarchical, # In case you wanna use that instead https://docs.crewai.com/how-to/Hierarchical/
         )
