@@ -60,3 +60,6 @@ Before running the main crewAI workflow, you may need to ingest or update your d
 
 ```bash
 python -m src.medai.data_ingestion
+```
+
+Central chest pressure, radiating to left arm and jaw, sweating, shortness of breath, nausea
