@@ -54,4 +54,9 @@ For support, questions, or feedback regarding the Medai Crew or crewAI.
 Let's create wonders together with the power and simplicity of crewAI.
 
 
+## Data Ingestion
+
+Before running the main crewAI workflow, you may need to ingest or update your dataset. The following command runs the data ingestion module, which processes and prepares your data for use by the agents. Run this from the root folder of your project:
+
+```bash
 python -m src.medai.data_ingestion
