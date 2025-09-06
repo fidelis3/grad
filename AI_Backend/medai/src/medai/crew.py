@@ -1,30 +1,31 @@
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 from .tools.custom_tool import MedicalKnowledgeRetrieverTool
+from .llms import get_llm
+
 
 @CrewBase
 class MedaiCrew:
-    """Medai crew"""
+    """Medai crew for deep medical diagnosis"""
 
     agents_config = "config/doctor_agents.yaml"
     tasks_config = "config/doctor_tasks.yaml"
-
     medical_retriever_tool = MedicalKnowledgeRetrieverTool()
 
     @agent
     def symptom_analyzer_agent(self) -> Agent:
         return Agent(
             config=self.agents_config["symptom_analyzer_agent"],
+            llm=get_llm("gemini-1.5-pro"),
             verbose=True,
-            allow_delegation=False,
         )
 
     @agent
     def differential_diagnosis_agent(self) -> Agent:
         return Agent(
             config=self.agents_config["differential_diagnosis_agent"],
+            llm=get_llm("gpt-4o"),
             verbose=True,
-            allow_delegation=False,
         )
 
     @agent
@@ -32,6 +33,7 @@ class MedaiCrew:
         return Agent(
             config=self.agents_config["research_agent"],
             tools=[self.medical_retriever_tool],
+            llm=get_llm("gemini-1.5-pro"),
             verbose=True,
         )
 
@@ -40,6 +42,7 @@ class MedaiCrew:
         return Agent(
             config=self.agents_config["guideline_compliance_agent"],
             tools=[self.medical_retriever_tool],
+            llm=get_llm("gemini-1.5-pro"),
             verbose=True,
         )
 
@@ -48,12 +51,17 @@ class MedaiCrew:
         return Agent(
             config=self.agents_config["contraindication_ddi_agent"],
             tools=[self.medical_retriever_tool],
+            llm=get_llm("gemini-1.5-pro"),
             verbose=True,
         )
 
     @agent
     def final_report_agent(self) -> Agent:
-        return Agent(config=self.agents_config["final_report_agent"], verbose=True)
+        return Agent(
+            config=self.agents_config["final_report_agent"],
+            llm=get_llm("gpt-4o-mini"),
+            verbose=True,
+        )
 
     @task
     def symptom_structuring_task(self) -> Task:
@@ -109,13 +117,13 @@ class MedaiCrew:
             verbose=True,
         )
 
+
 @CrewBase
 class PatientTriageCrew:
     """Crew for safe, patient-facing triage and education."""
 
     agents_config = "config/triage_agents.yaml"
     tasks_config = "config/triage_tasks.yaml"
-
     medical_retriever_tool = MedicalKnowledgeRetrieverTool()
 
     @agent
@@ -123,6 +131,7 @@ class PatientTriageCrew:
         return Agent(
             config=self.agents_config["patient_triage_agent"],
             tools=[self.medical_retriever_tool],
+            llm=get_llm("gemini-1.5-pro"),
             verbose=True,
             allow_delegation=False,
         )
