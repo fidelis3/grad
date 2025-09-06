@@ -24,7 +24,6 @@ class MedaiCrew:
     def differential_diagnosis_agent(self) -> Agent:
         return Agent(
             config=self.agents_config["differential_diagnosis_agent"],
-            llm=get_llm("gpt-4o"),
             verbose=True,
         )
 
@@ -150,4 +149,38 @@ class PatientTriageCrew:
             agents=[self.patient_triage_agent()],
             tasks=[self.patient_triage_task()],
             verbose=True,
+        )
+
+@CrewBase
+class CaseGeneratorCrew:
+    """Crew for generating clinical case studies."""
+    agents_config = 'config/case_generator_agents.yaml'
+    tasks_config = 'config/case_generator_tasks.yaml'
+
+    medical_retriever_tool = MedicalKnowledgeRetrieverTool()
+    
+    @agent
+    def case_generator_agent(self) -> Agent:
+        return Agent(
+            config=self.agents_config['case_generator_agent'],
+            tools=[self.medical_retriever_tool],
+            verbose=True,
+            allow_delegation=False
+        )
+        
+    @task
+    def case_generation_task(self) -> Task:
+        return Task(
+            config=self.tasks_config['case_generation_task'],
+            agent=self.case_generator_agent(),
+            output_file='clinical_case_study.md'
+        )
+        
+    @crew
+    def crew(self) -> Crew:
+        """Creates the case generator crew"""
+        return Crew(
+            agents=[self.case_generator_agent()],
+            tasks=[self.case_generation_task()],
+            verbose=True
         )
