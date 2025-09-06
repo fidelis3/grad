@@ -3,6 +3,7 @@ import eslint from '@eslint/js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import eslintPrettierConfig from 'eslint-config-prettier/flat';
 
 export default tseslint.config(
   {
@@ -32,4 +33,5 @@ export default tseslint.config(
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
     },
   },
+  eslintPrettierConfig,
 );
