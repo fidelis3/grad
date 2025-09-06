@@ -8,7 +8,7 @@ symptom_structuring_task:
     - Medical History: {medical_history}
     - Additional Notes: {additional_notes}
     - current_date
-    
+
     Do not invent, assume, or add extra details that are not explicitly
     given. Your role is to faithfully restructure the provided information
     into a clean narrative that downstream agents can analyze.
@@ -65,7 +65,6 @@ research_task:
   context:
     - differential_diagnosis_task
 
-
 guideline_compliance_task:
   description: >
     Assess whether each researched condition (from context) aligns with
@@ -84,7 +83,6 @@ guideline_compliance_task:
   agent: guideline_compliance_agent
   context:
     - research_task
-
 
 contraindication_task:
   description: >
@@ -115,7 +113,7 @@ final_report_task:
   expected_output: >-
     A perfectly formatted markdown document. The document must start IMMEDIATELY with the main title (`# Final Medical Report...`) and contain nothing before it.
     Use the following structure exactly:
-    
+
     # Final Medical Report: [Insert Concise Title Based on Diagnosis]
 
     **Patient:** [Insert Patient Name]

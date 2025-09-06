@@ -24,7 +24,7 @@ The MCP program is likely to provide structured learning paths and curated resou
 
 **6. Emphasis on Security and Compliance:**
 
-Security certifications are projected to hold increased importance, covering areas like cloud security, data privacy, and compliance with industry regulations such as GDPR, HIPAA, and PCI DSS.  This reflects the growing concern around cybersecurity threats and the need for skilled professionals to protect sensitive data and systems.
+Security certifications are projected to hold increased importance, covering areas like cloud security, data privacy, and compliance with industry regulations such as GDPR, HIPAA, and PCI DSS. This reflects the growing concern around cybersecurity threats and the need for skilled professionals to protect sensitive data and systems.
 
 **7. AI and Machine Learning Certifications:**
 
@@ -42,5 +42,4 @@ While Azure is expected to be central to the MCP program, certifications may ack
 
 The MCP program might offer badges and micro-credentials for specific skills and achievements, providing a granular and verifiable way to demonstrate expertise in niche areas. These micro-credentials can complement traditional certifications and allow professionals to showcase their specific skills and knowledge.
 
-
-This report provides a prospective view of the MCP program in 2025.  For the most accurate and up-to-date information, always consult the official Microsoft Learn website and other relevant Microsoft resources.
+This report provides a prospective view of the MCP program in 2025. For the most accurate and up-to-date information, always consult the official Microsoft Learn website and other relevant Microsoft resources.
