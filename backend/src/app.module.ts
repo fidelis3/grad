@@ -8,7 +8,7 @@ import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb+srv://ntoitifidelis_db_user:9e86itQqG9pna7wu@cluster0.6ibkgev.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'), // Update with your MongoDB connection string
+    MongooseModule.forRoot(process.env.MONGO_URI || 'mongodb://localhost:27017/defaultdb'), // Update with your MongoDB connection string
     UsersModule, 
     AuthModule
   ],

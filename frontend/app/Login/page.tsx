@@ -1,10 +1,11 @@
 'use client';
-import React, { useState } from 'react';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 
-// SVG Icon Components
+// Social Media Icons
 const TwitterIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24">
     <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
@@ -27,10 +28,44 @@ export default function LoginPage() {
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Login attempt:', { email, password });
+        setLoading(true);
+        setError('');
+
+        try {
+            const response = await fetch('http://localhost:5000/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email,
+                    password,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Store token and user data in localStorage
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                
+                // Redirect to dashboard or home page
+                router.push('/dashboard');
+            } else {
+                setError(data.message || 'Login failed. Please try again.');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            setError('Network error. Please check your connection and ensure the backend server is running.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleSignUpClick = () => {
@@ -79,6 +114,13 @@ export default function LoginPage() {
                         </h1>
                     </div>
 
+                    {/* Error Message */}
+                    {error && (
+                        <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-md text-sm" style={{ fontFamily: 'var(--font-work-sans)' }}>
+                            {error}
+                        </div>
+                    )}
+
                     <form className="space-y-4" onSubmit={handleSubmit}>
                         {/* Email */}
                         <div>
@@ -91,11 +133,12 @@ export default function LoginPage() {
                                 type="email"
                                 autoComplete="email"
                                 required
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
-                                style={{ fontFamily: 'var(--font-work-sans)' }}
-                                placeholder="Enter your email address"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
+                                disabled={loading}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                style={{ fontFamily: 'var(--font-work-sans)' }}
+                                placeholder="Enter your email"
                             />
                         </div>
 
@@ -110,11 +153,12 @@ export default function LoginPage() {
                                 type="password"
                                 autoComplete="current-password"
                                 required
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
-                                style={{ fontFamily: 'var(--font-work-sans)' }}
-                                placeholder="Enter your password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
+                                disabled={loading}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                style={{ fontFamily: 'var(--font-work-sans)' }}
+                                placeholder="Enter your password"
                             />
                         </div>
 
@@ -122,53 +166,69 @@ export default function LoginPage() {
                         <div className="pt-2">
                             <button
                                 type="submit"
-                                className="w-full py-2 px-4 bg-blue-900 text-white font-medium rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                                disabled={loading}
+                                className="w-full py-2 px-4 bg-blue-900 text-white font-medium rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-blue-600 disabled:cursor-not-allowed"
                                 style={{ fontFamily: 'var(--font-work-sans)' }}
                             >
-                                Login
+                                {loading ? 'Signing In...' : 'Sign In'}
                             </button>
-                        </div>
-
-                        {/* Forgot Password Link */}
-                        <div className="flex justify-end pt-2">
-                            <Link
-                                href="/PasswordReset"
-                                className="text-black hover:text-gray-700 text-sm"
-                                style={{ fontFamily: 'var(--font-work-sans)' }}
-                            >
-                                Forgot password?
-                            </Link>
-                        </div>
-
-                        {/* Sign Up Link */}
-                        <div className="text-center pt-2">
-                            <p className="text-sm" style={{ fontFamily: 'var(--font-work-sans)' }}>
-                                <span className="text-black">Don&apos;t have an account? </span>
-                                <button
-                                    type="button"
-                                    onClick={handleSignUpClick}
-                                    className="text-blue-900 hover:text-blue-700 font-medium underline"
-                                    style={{ fontFamily: 'var(--font-work-sans)' }}
-                                >
-                                    Sign Up
-                                </button>
-                            </p>
                         </div>
                     </form>
 
+                    {/* Forgot Password */}
+                    <div className="text-center">
+                        <Link 
+                            href="/PasswordReset" 
+                            className="text-blue-900 hover:text-blue-700 text-sm underline"
+                            style={{ fontFamily: 'var(--font-work-sans)' }}
+                        >
+                            Forgot your password?
+                        </Link>
+                    </div>
+
                     {/* Social Media Icons */}
-                    <div className="pt-6">
-                        <div className="flex justify-center space-x-6">
-                            <button className="text-gray-600 hover:text-blue-500 transition-colors">
-                                <TwitterIcon className="w-6 h-6" />
+                    <div className="text-center pt-4">
+                        <p className="text-sm text-gray-600 mb-4" style={{ fontFamily: 'var(--font-work-sans)' }}>
+                            Or sign in with
+                        </p>
+                        <div className="flex justify-center space-x-4">
+                            <button 
+                                type="button" 
+                                className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+                                aria-label="Sign in with Twitter"
+                            >
+                                <TwitterIcon className="w-5 h-5 text-gray-600" />
                             </button>
-                            <button className="text-gray-600 hover:text-blue-600 transition-colors">
-                                <FacebookIcon className="w-6 h-6" />
+                            <button 
+                                type="button" 
+                                className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+                                aria-label="Sign in with Facebook"
+                            >
+                                <FacebookIcon className="w-5 h-5 text-gray-600" />
                             </button>
-                            <button className="text-gray-600 hover:text-gray-800 transition-colors">
-                                <AppleIcon className="w-6 h-6" />
+                            <button 
+                                type="button" 
+                                className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+                                aria-label="Sign in with Apple"
+                            >
+                                <AppleIcon className="w-5 h-5 text-gray-600" />
                             </button>
                         </div>
+                    </div>
+
+                    {/* Sign Up Link */}
+                    <div className="text-center pt-4">
+                        <p className="text-sm text-gray-600" style={{ fontFamily: 'var(--font-work-sans)' }}>
+                            Don&apos;t have an account?{' '}
+                            <button
+                                type="button"
+                                onClick={handleSignUpClick}
+                                className="text-blue-900 hover:text-blue-700 font-medium underline"
+                                style={{ fontFamily: 'var(--font-work-sans)' }}
+                            >
+                                Sign Up
+                            </button>
+                        </p>
                     </div>
                 </div>
             </div>
