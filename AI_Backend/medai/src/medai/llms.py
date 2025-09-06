@@ -19,4 +19,4 @@ def get_llm(model_name: str) -> LLM:
         return llm_instance
     else:
         print(f"WARNING: Unknown model name '{model_name}'. Defaulting to gpt-4o-mini.")
-        return llm_map.get("gpt-4o-mini")
+        return LLM(model="openai/gpt-4o-mini")
