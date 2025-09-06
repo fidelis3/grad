@@ -9,6 +9,7 @@ dependencies = [
     "fastapi[all]",
     "langserve[all]",
     "langchain-openai",
+    "langchain-google-genai",
     "pypdf",
     "chromadb",
     "pydantic==2.10.6",

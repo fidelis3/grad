@@ -1,0 +1,24 @@
+case_generation_task:
+  description: >-
+    Generate a detailed clinical case study based on the following medical condition: {medical_condition}.
+    1. Use your tool to research the typical presentation, symptoms, and diagnostic findings for this condition.
+    2. Create a fictional patient profile.
+    3. Write a comprehensive case study in markdown format that includes sections for Patient Presentation, Medical History, Physical Examination, and a set of 3-5 questions for the student to consider.
+    4. Ensure the case is realistic and educational.
+  expected_output: >-
+    A well-formatted markdown document representing a clinical case study. The output must start immediately with the title and follow this structure exactly:
+
+    # Clinical Case Study: [Name of Medical Condition]
+
+    ## Patient Presentation
+    [A paragraph describing the fictional patient's chief complaint and symptoms.]
+
+    ## Medical and Social History
+    [A paragraph detailing the patient's relevant history.]
+
+    ## Physical Examination
+    [A summary of the key findings from a physical examination.]
+
+    ## Discussion Questions
+    [A numbered list of 3-5 questions that prompt the student to think about differential diagnosis, next steps, and management.]
+  agent: case_generator_agent
