@@ -13,7 +13,6 @@ class MedicalKnowledgeInput(BaseModel):
         description="The medical topic or specific question to search for, sent as a dictionary.",
     )
 
-
 class MedicalKnowledgeRetrieverTool(BaseTool):
     name: str = "Medical Knowledge Retriever"
     description: str = (
