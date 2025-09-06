@@ -1,0 +1,24 @@
+patient_triage_task:
+  description: >-
+    A patient has submitted the following symptoms: {symptoms}.
+    1. Use your tool to research general information related to these symptoms.
+    2. Based on your research, write a simple, reassuring explanation of what these symptoms might generally indicate.
+    3. Provide a list of potential, non-alarming causes.
+    4. Conclude with a clear, safe, and actionable recommendation for the patient's next step.
+    
+    IMPORTANT: You are a triage nurse, not a doctor. DO NOT, under any circumstances, provide a diagnosis. 
+    Your tone should be calm, educational, and safe.
+  expected_output: >-
+    A well-formatted markdown response with three distinct sections:
+    
+    ## Understanding Your Symptoms
+    A brief, simple paragraph explaining the main symptoms in general terms.
+    
+    ## What This Might Mean
+    A bulleted list of 2-4 general possibilities (e.g., "Viral infections," "Inflammatory responses") NOT specific diseases.
+    
+    ## Recommended Next Step
+    A clear, safe recommendation (e.g., "It is recommended to schedule an appointment with a doctor to discuss these symptoms," or "These symptoms warrant a visit to an urgent care clinic.").
+    
+    End with the disclaimer: "This is for informational purposes only and is not a substitute for professional medical advice."
+  agent: patient_triage_agent

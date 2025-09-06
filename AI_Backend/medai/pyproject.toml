@@ -1,0 +1,30 @@
+[project]
+name = "medai"
+version = "0.1.0"
+description = "MedAI using crewAI"
+authors = [{ name = "Nutnell", email = "nutnell00@gmail.com" }]
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "crewai[tools]>=0.152.0,<1.0.0",
+    "fastapi[all]",
+    "langserve[all]",
+    "langchain-openai",
+    "pypdf",
+    "chromadb",
+    "pydantic==2.10.6",
+    "sse-starlette"
+]
+
+[project.scripts]
+medai = "medai.main:run"
+run_crew = "medai.main:run"
+train = "medai.main:train"
+replay = "medai.main:replay"
+test = "medai.main:test"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.crewai]
+type = "crew"

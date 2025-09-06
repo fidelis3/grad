@@ -1,0 +1,150 @@
+symptom_structuring_task:
+  description: >-
+    Analyze the following patient data and create a concise, well-structured summary.
+    The data includes:
+    - Symptoms: {symptoms}
+    - Duration: {duration}
+    - Severity: {severity}
+    - Medical History: {medical_history}
+    - Additional Notes: {additional_notes}
+    - current_date
+    
+    Do not invent, assume, or add extra details that are not explicitly
+    given. Your role is to faithfully restructure the provided information
+    into a clean narrative that downstream agents can analyze.
+  expected_output: >
+    A single paragraph in plain text summarizing the patient's condition. The paragraph
+    must include all provided inputs in a coherent clinical style.
+  agent: symptom_analyzer_agent
+  input_keys:
+    - symptoms
+    - duration
+    - severity
+    - medical_history
+    - additional_notes
+
+differential_diagnosis_task:
+  description: >
+    Based strictly on the structured patient summary from the context,
+    generate a prioritized list of potential medical conditions. Use only
+    the symptoms, duration, severity, medical history, and notes provided.
+    Do not introduce conditions unrelated to the structured input. If the
+    structured summary does not contain enough information to support a
+    reasonable differential diagnosis, respond with an empty list and
+    explain that no valid differential could be generated.
+  expected_output: >
+    A JSON object with a key "differential_diagnosis", which is a list of
+    dictionaries. Each dictionary must include:
+      - "condition": the possible condition
+      - "likelihood_score": integer from 1-10, with 10 = most likely
+      - "rationale": a short explanation tied directly to the patient's
+        provided data
+    If no differential can be made, return:
+      {"differential_diagnosis": []}
+  agent: differential_diagnosis_agent
+  context:
+    - symptom_structuring_task
+
+research_task:
+  description: >
+    For each condition explicitly listed in the differential diagnosis
+    (from context), search for the most recent medical literature,
+    clinical guidelines, and studies. Only research conditions that
+    are actually present in the differential_diagnosis_task output.
+    If the differential list is empty, return an empty object.
+    Do not add, assume, or invent conditions outside the provided list.
+  expected_output: >
+    A JSON object where each key is a condition from the differential
+    diagnosis. Each value must be a list of 1-5 dictionaries, with:
+      - "finding": a brief description of relevant evidence
+      - "evidence_snippet": a short excerpt from the source
+      - "citation_key": a clear reference identifier
+    If no differential diagnoses exist, return:
+      {}
+  agent: research_agent
+  context:
+    - differential_diagnosis_task
+
+
+guideline_compliance_task:
+  description: >
+    Assess whether each researched condition (from context) aligns with
+    current evidence-based clinical guidelines. Only evaluate conditions
+    that appear in the research_task output. If no researched conditions
+    exist, return an empty object. Do not assume or invent guideline
+    compliance for conditions not provided.
+  expected_output: >
+    A JSON object where each key is a condition from the research_task
+    output. Each value must be a dictionary with:
+      - "guideline_source": the primary guideline (e.g., NICE, APA, WHO)
+      - "compliance_assessment": "aligned", "not_aligned", or "unclear"
+      - "justification": a short explanation tied to the evidence
+    If no conditions exist in research_task, return:
+      {}
+  agent: guideline_compliance_agent
+  context:
+    - research_task
+
+
+contraindication_task:
+  description: >
+    Identify potential contraindications relevant to the researched
+    conditions and guideline compliance. Use only the patient data,
+    medical history, allergies, medications, and conditions explicitly
+    provided in prior outputs. If no patient history or researched
+    conditions are available, return an empty object. Do not assume
+    or invent contraindications.
+  expected_output: >
+    A JSON object with a key "contraindications" containing a list of
+    dictionaries. Each dictionary must include:
+      - "condition_or_medication": the item potentially contraindicated
+      - "reason": a short explanation tied directly to patient data
+    If no contraindications can be identified, return:
+      {"contraindications": []}
+  agent: contraindication_ddi_agent
+  context:
+    - symptom_structuring_task
+    - research_task
+    - guideline_compliance_task
+
+final_report_task:
+  description: >
+    Synthesize all the findings from the preceding tasks (symptom summary, differential diagnosis, research, guideline
+    compliance, and contraindications). Your final output MUST be a single, professional, and fully-cited clinical report
+    formatted in clean markdown. Do not include any conversational text, introductions, or summaries before the main report title.
+  expected_output: >-
+    A perfectly formatted markdown document. The document must start IMMEDIATELY with the main title (`# Final Medical Report...`) and contain nothing before it.
+    Use the following structure exactly:
+    
+    # Final Medical Report: [Insert Concise Title Based on Diagnosis]
+
+    **Patient:** [Insert Patient Name]
+
+    **Date:** {current_date}
+
+    **Presenting Complaint:** [Insert Presented Complaint]
+
+    ## Summary of Symptoms
+    [A concise paragraph summarizing the patient's presentation based on the initial structured summary.]
+
+    ## Differential Diagnosis
+    [A markdown table or a numbered list of the potential diagnoses, including likelihood scores and rationales.]
+
+    ## Evidence and Citations
+    [A bulleted list summarizing the key findings from the research task for the primary diagnosis, including citations.]
+
+    ## Guideline Compliance
+    [A brief statement on how the findings align with the retrieved clinical guidelines.]
+
+    ## Contraindications
+    [A section detailing any potential contraindications identified.]
+
+    ## Recommended Next Steps
+    [A numbered list of clear, actionable next steps for the clinician.]
+  agent: final_report_agent
+  context:
+    - symptom_structuring_task
+    - differential_diagnosis_task
+    - research_task
+    - guideline_compliance_task
+    - contraindication_task
