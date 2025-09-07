@@ -5,7 +5,6 @@ import Image from 'next/image';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
-// SVG Icon Components
 const CalendarIcon = ({ className }: { className?: string }) => (
   <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M19 3H18V1H16V3H8V1H6V3H5C3.89 3 3.01 3.9 3.01 5L3 19C3 20.1 3.89 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V8H19V19Z" fill="currentColor"/>
@@ -48,7 +47,7 @@ interface RecentPost {
 const NewsPage: React.FC = () => {
   const [expandedArticles, setExpandedArticles] = useState<{ [key: number]: boolean }>({});
 
-  // Dynamic news data
+
   const newsArticles: NewsArticle[] = [
     {
       id: 1,
@@ -129,7 +128,7 @@ const NewsPage: React.FC = () => {
       
       <main className="py-16 bg-gray-50 min-h-screen">
         <div className="max-w-7xl mx-auto px-4">
-          {/* Page Title */}
+         
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-blue-900 mb-4" style={{ fontFamily: 'var(--font-yeseva-one)' }}>
               Latest Medical News
@@ -139,14 +138,14 @@ const NewsPage: React.FC = () => {
             </p>
           </div>
 
-          {/* Main Content Grid - 3:1 Ratio */}
+       
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             
-            {/* Main News Column (3/4 width) */}
+          
             <div className="lg:col-span-3 space-y-8">
               {newsArticles.map((article) => (
                 <article key={article.id} className="bg-white rounded-lg shadow-lg overflow-hidden">
-                  {/* Article Image */}
+            
                   <div className="w-full h-64 md:h-80 relative">
                     <Image
                       src={article.image}
@@ -156,11 +155,11 @@ const NewsPage: React.FC = () => {
                     />
                   </div>
 
-                  {/* Article Content */}
+               
                   <div className="p-6 md:p-8">
-                    {/* Date and Author */}
+              
                     <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 space-y-2 sm:space-y-0 mb-4">
-                      {/* Date */}
+                 
                       <div className="flex items-center space-x-2 text-gray-600">
                         <CalendarIcon className="w-4 h-4 text-blue-500" />
                         <span className="text-sm">
@@ -168,26 +167,26 @@ const NewsPage: React.FC = () => {
                         </span>
                       </div>
                       
-                      {/* Author */}
+                
                       <div className="flex items-center space-x-2 text-gray-600">
                         <UserIcon className="w-4 h-4 text-blue-500" />
                         <span className="text-sm">{article.author}</span>
                       </div>
                     </div>
 
-                    {/* Title */}
+                 
                     <h2 className="text-2xl md:text-3xl font-bold text-blue-900 mb-4" style={{ fontFamily: 'var(--font-yeseva-one)' }}>
                       {article.title}
                     </h2>
 
-                    {/* Article Text */}
+                 
                     <div className="text-black leading-relaxed mb-6">
                       <p className="mb-4">
                         {expandedArticles[article.id] ? article.fullText : article.preview}
                       </p>
                     </div>
 
-                    {/* Read More Button */}
+                   
                     <button
                       onClick={() => toggleReadMore(article.id)}
                       className="px-6 py-3 bg-blue-100 text-blue-900 rounded-lg hover:bg-blue-200 transition-colors font-medium"
@@ -199,10 +198,9 @@ const NewsPage: React.FC = () => {
               ))}
             </div>
 
-            {/* Sidebar Column (1/4 width) */}
+           
             <div className="lg:col-span-1 space-y-8">
-              
-              {/* Recent Posts Section */}
+       
               <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
                 <h3 className="text-xl font-bold text-blue-900 mb-6" style={{ fontFamily: 'var(--font-yeseva-one)' }}>
                   Recent Posts
@@ -211,7 +209,7 @@ const NewsPage: React.FC = () => {
                 <div className="space-y-4">
                   {recentPosts.map((post) => (
                     <div key={post.id} className="flex space-x-3 pb-4 border-b border-gray-100 last:border-b-0">
-                      {/* Small Image */}
+                   
                       <div className="w-16 h-16 relative flex-shrink-0">
                         <Image
                           src={post.image}
@@ -221,14 +219,14 @@ const NewsPage: React.FC = () => {
                         />
                       </div>
                       
-                      {/* Content */}
+                 
                       <div className="flex-1">
-                        {/* Date */}
+                      
                         <div className="text-xs text-blue-100 bg-blue-500 px-2 py-1 rounded inline-block mb-2">
                           {post.date.day} {post.date.date} {post.date.month} {post.date.year}
                         </div>
                         
-                        {/* Title */}
+                  
                         <h4 className="text-sm font-medium text-gray-900 leading-tight">
                           {post.title}
                         </h4>
@@ -238,7 +236,7 @@ const NewsPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Categories Section */}
+        
               <div className="bg-white rounded-lg shadow-lg p-6">
                 <h3 className="text-xl font-bold text-blue-900 mb-6" style={{ fontFamily: 'var(--font-yeseva-one)' }}>
                   Categories

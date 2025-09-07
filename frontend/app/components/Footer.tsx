@@ -55,13 +55,13 @@ const Footer: React.FC = () => {
   };
 
   const handleHomeNavigation = () => {
-    // Home should always go to the onboarding page
+
     router.push('/');
   };
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle newsletter subscription
+  
     console.log('Newsletter subscription:', email);
     setEmail('');
   };

@@ -91,7 +91,7 @@ const OnboardingPage: React.FC = () => {
     if (currentSlide < totalSlides - 1) {
       setCurrentSlide(currentSlide + 1);
     } else {
-      // Navigate to landing page
+    
       router.push('/LandingPage');
     }
   };
@@ -104,12 +104,12 @@ const OnboardingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Blue Navigation Bar */}
+     
       <nav className="bg-blue-900">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-center h-14">
             
-            {/* Desktop Navigation - Centered */}
+       
             <div className="hidden lg:flex lg:items-center lg:space-x-6">
               <button
                 onClick={() => handleNavigation('/')}
@@ -143,7 +143,7 @@ const OnboardingPage: React.FC = () => {
               </button>
             </div>
 
-            {/* Mobile menu button - Centered */}
+         
             <div className="lg:hidden flex items-center justify-center w-full">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -159,7 +159,7 @@ const OnboardingPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Mobile Navigation Menu */}
+        
           {isMobileMenuOpen && (
             <div className="lg:hidden">
               <div className="px-2 pt-2 pb-3 space-y-1 border-t border-blue-800">
@@ -200,7 +200,7 @@ const OnboardingPage: React.FC = () => {
         </div>
       </nav>
 
-      {/* Progress Bar - Detached with spacing and rounded edges */}
+   
       <div className="px-4 py-4">
         <div className="max-w-5xl mx-auto">
           <div className="w-full bg-gray-200 h-3 rounded-full">
@@ -212,29 +212,29 @@ const OnboardingPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content */}
+    
       <div className="flex-1 px-4 py-6 lg:py-10">
         <div className="max-w-5xl mx-auto">
           
-          {/* Slide 1: Language Selection */}
+        
           {currentSlide === 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-center min-h-[400px]">
               
-              {/* Left Content */}
+             
               <div className="space-y-6">
-                {/* Welcome Title */}
+              
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight" style={{ fontFamily: 'var(--font-yeseva-one)' }}>
                   <span className="text-blue-900">Welcome To Med</span>
                   <span className="text-blue-500">dical</span>
                 </h1>
 
-                {/* Language Selection */}
+             
                 <div className="space-y-4">
                   <h2 className="text-xl md:text-2xl font-bold text-black" style={{ fontFamily: 'var(--font-yeseva-one)' }}>
                     Choose Your Preferred Language:
                   </h2>
 
-                  {/* Language Checkboxes */}
+                
                   <div className="space-y-3">
                     {languages.map((language) => (
                       <label key={language} className="flex items-center space-x-3 cursor-pointer">
@@ -253,7 +253,7 @@ const OnboardingPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Right Content - Image */}
+          
               <div className="flex justify-center lg:justify-end">
                 <div className="relative w-full max-w-md h-80 lg:h-[400px]">
                   <Image
@@ -263,7 +263,7 @@ const OnboardingPage: React.FC = () => {
                     className="object-cover rounded-lg"
                     priority
                   />
-                  {/* White quarter circle overlay for bottom left corner */}
+                 
                   <div className="absolute bottom-0 left-0 bg-white" 
                        style={{
                          width: '180px',
@@ -277,20 +277,20 @@ const OnboardingPage: React.FC = () => {
             </div>
           )}
 
-          {/* Slide 2: Country Selection */}
+        
           {currentSlide === 1 && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-center min-h-[400px]">
               
-              {/* Left Content */}
+             
               <div className="space-y-6">
-                {/* Country Title */}
+            
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight" style={{ fontFamily: 'var(--font-yeseva-one)' }}>
                   <span className="text-black">Which </span>
                   <span className="text-blue-900">Country</span>
                   <span className="text-black"> Are You From?</span>
                 </h1>
 
-                {/* Country Dropdown */}
+         
                 <div className="space-y-4">
                   <div className="relative">
                     <button
@@ -312,7 +312,7 @@ const OnboardingPage: React.FC = () => {
                       <ChevronDownIcon className={`w-5 h-5 text-white transition-transform ${isCountryDropdownOpen ? 'rotate-180' : ''}`} />
                     </button>
 
-                    {/* Dropdown Menu */}
+               
                     {isCountryDropdownOpen && (
                       <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                         {countries.map((country) => (
@@ -336,7 +336,7 @@ const OnboardingPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Right Content - Image */}
+             
               <div className="flex justify-center lg:justify-end">
                 <div className="relative w-full max-w-md h-80 lg:h-[400px]">
                   <Image
@@ -345,7 +345,7 @@ const OnboardingPage: React.FC = () => {
                     fill
                     className="object-cover rounded-lg"
                   />
-                  {/* White quarter circle overlay for bottom left corner */}
+                
                   <div className="absolute bottom-0 left-0 bg-white" 
                        style={{
                          width: '180px',
