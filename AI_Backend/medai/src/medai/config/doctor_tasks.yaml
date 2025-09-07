@@ -111,9 +111,9 @@ final_report_task:
   description: >
     Synthesize all the findings from the preceding tasks (symptom summary, differential diagnosis, research, guideline
     compliance, and contraindications). Your final output MUST be a single, professional, and fully-cited clinical report
-    formatted in clean markdown. Do not include any conversational text, introductions, or summaries before the main report title.
+    Do not include any conversational text, introductions, or summaries before the main report title.
   expected_output: >-
-    A perfectly formatted markdown document. The document must start IMMEDIATELY with the main title (`# Final Medical Report...`) and contain nothing before it.
+    A perfectly formatted document. The document must start IMMEDIATELY with the main title (`# Final Medical Report...`) and contain nothing before it.
     Use the following structure exactly:
     
     # Final Medical Report: [Insert Concise Title Based on Diagnosis]
@@ -128,7 +128,7 @@ final_report_task:
     [A concise paragraph summarizing the patient's presentation based on the initial structured summary.]
 
     ## Differential Diagnosis
-    [A markdown table or a numbered list of the potential diagnoses, including likelihood scores and rationales.]
+    [A table or a numbered list of the potential diagnoses, including likelihood scores and rationales.]
 
     ## Evidence and Citations
     [A bulleted list summarizing the key findings from the research task for the primary diagnosis, including citations.]
