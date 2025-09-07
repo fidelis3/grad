@@ -1,21 +1,17 @@
-# Clinical Case Study: Hypertension
+# Clinical Case Study: Typhoid Fever
 
 ## Patient Presentation
-
-A 58-year-old male presents to the clinic complaining of occasional headaches, particularly in the morning. He also reports mild dizziness and fatigue. He denies any chest pain, shortness of breath, or vision changes.  He admits to increased stress at work recently due to a promotion.
+A 30-year-old male presents to the clinic with a 7-day history of persistent high fever, headache, generalized body aches, and abdominal discomfort. He reports feeling extremely fatigued and has experienced a gradual onset of these symptoms. He also notes episodes of diarrhea alternating with constipation and a possible decrease in appetite.
 
 ## Medical and Social History
-
-The patient has a family history of hypertension and heart disease. His father died of a heart attack at age 65. He is a smoker, averaging half a pack per day for the past 30 years. He drinks alcohol socially, 2-3 beers on weekends. He does not engage in regular exercise and reports a diet high in processed foods. He has no known allergies. He has been taking over-the-counter pain relievers for his headaches.
+The patient has no significant past medical history and is not on any chronic medications. He works as a software engineer and recently returned from a 3-week business trip to South Asia where he consumed local street food and beverages. He denies any history of smoking, alcohol, or illicit drug use. His vaccinations are up to date as per his knowledge.
 
 ## Physical Examination
-
-The patient appears generally well.  His blood pressure is 160/95 mmHg in both arms. His pulse is 80 bpm and regular.  Heart sounds are normal with no murmurs. Lung sounds are clear.  Abdominal examination is unremarkable.  No peripheral edema is noted.
+The physical examination reveals a febrile patient with a temperature of 103°F (39.4°C). He appears weak and lethargic. Abdominal examination shows mild tenderness in the right lower quadrant without rebound tenderness or guarding. Hepatosplenomegaly is noted on palpation. A faint rash consisting of rose-colored spots is observed on his trunk.
 
 ## Discussion Questions
-
-1. What are the potential differential diagnoses for this patient's presentation, besides essential hypertension?  Consider factors such as his age, family history, and lifestyle.
-2. What further investigations would you recommend to assess this patient's cardiovascular risk?
-3. What lifestyle modifications would you recommend for this patient?  Be specific.
-4. What pharmacologic therapies would you consider for this patient, given his blood pressure readings?
-5. How would you educate the patient about the importance of long-term blood pressure control and adherence to treatment?
+1. Based on the clinical presentation and history, what are the differential diagnoses you would consider?
+2. What specific tests would you order to confirm a diagnosis of Typhoid fever?
+3. How would you differentiate between Typhoid fever and other febrile illnesses endemic to South Asia?
+4. Discuss the treatment options available for Typhoid fever. How might antibiotic resistance impact your choice?
+5. What public health measures could be taken to prevent Typhoid fever, particularly in travelers returning from endemic regions?

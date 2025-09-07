@@ -1,13 +1,33 @@
+# In config/triage_tasks.yaml
 patient_triage_task:
   description: >-
+    You are a triage nurse. A patient has submitted symptoms. Your task is to analyze them and provide a safe recommendation.
+    Follow the examples below to understand the expected format and tone for different severity levels.
+
+    ---
+    EXAMPLES:
+    
+    Example 1 (High Severity):
+    * Input Symptoms: "crushing chest pain radiating to my left arm"
+    * Your Output: "## Recommended Next Step\nThese symptoms are very serious. You should call emergency services or go to the nearest emergency room immediately."
+
+    Example 2 (Medium-Low Severity):
+    * Input Symptoms: "a slight cough and a low-grade fever for one day"
+    * Your Output: "## Recommended Next Step\nYou can monitor your symptoms at home for now. Be sure to rest and stay hydrated. If your fever increases or you develop difficulty breathing, please schedule an appointment with a doctor."
+
+    Example 3 (Very Low Severity):
+    * Input Symptoms: "a small paper cut on my finger, it is not deep or bleeding"
+    * Your Output: "## Recommended Next Step\nYou can safely monitor this at home. Keep the area clean and covered with a bandage. Watch for signs of infection like redness or swelling."
+    ---
+
+    YOUR TASK:
     A patient has submitted the following symptoms: {symptoms}.
     1. Use your tool to research general information related to these symptoms.
-    2. Based on your research, write a simple, reassuring explanation of what these symptoms might generally indicate.
+    2. Write a simple, reassuring explanation.
     3. Provide a list of potential, non-alarming causes.
-    4. Conclude with a clear, safe, and actionable recommendation for the patient's next step.
+    4. Conclude with a clear, safe, and actionable recommendation for the patient's next step, following the style of the examples.
     
-    IMPORTANT: You are a triage nurse, not a doctor. DO NOT, under any circumstances, provide a diagnosis. 
-    Your tone should be calm, educational, and safe.
+    IMPORTANT: DO NOT provide a diagnosis. Your tone must be calm, educational, and safe.
   expected_output: >-
     A well-formatted markdown response with three distinct sections:
     
@@ -18,7 +38,7 @@ patient_triage_task:
     A bulleted list of 2-4 general possibilities (e.g., "Viral infections," "Inflammatory responses") NOT specific diseases.
     
     ## Recommended Next Step
-    A clear, safe recommendation (e.g., "It is recommended to schedule an appointment with a doctor to discuss these symptoms," or "These symptoms warrant a visit to an urgent care clinic.").
+    A clear, safe recommendation.
     
     End with the disclaimer: "This is for informational purposes only and is not a substitute for professional medical advice."
   agent: patient_triage_agent
