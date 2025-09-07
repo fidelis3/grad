@@ -12,6 +12,7 @@ dependencies = [
     "langchain-google-genai",
     "pypdf",
     "uvicorn",
+    "biopython",
     "chromadb",
     "pydantic==2.10.6",
     "sse-starlette"

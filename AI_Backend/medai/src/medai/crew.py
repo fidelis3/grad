@@ -1,6 +1,9 @@
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 from .tools.custom_tool import MedicalKnowledgeRetrieverTool
+from .tools.pubmed_tool import PubMedSearchTool
+from .tools.ahrq_tool import AHRQSearchTool
+from .tools.symptom_tool import SymptomToDiseaseTool
 from .llms import get_llm
 
 @CrewBase
@@ -10,8 +13,10 @@ class MedaiCrew:
     agents_config = "config/doctor_agents.yaml"
     tasks_config = "config/doctor_tasks.yaml"
     medical_retriever_tool = MedicalKnowledgeRetrieverTool()
+    pubmed_search_tool = PubMedSearchTool()
+    ahrq_search_tool = AHRQSearchTool()
+    symptom_tool = SymptomToDiseaseTool()
 
-    # --- Agents ---
     @agent
     def symptom_analyzer_agent(self) -> Agent:
         return Agent(
@@ -24,6 +29,7 @@ class MedaiCrew:
     def differential_diagnosis_agent(self) -> Agent:
         return Agent(
             config=self.agents_config["differential_diagnosis_agent"],
+            tools=[self.symptom_tool],
             verbose=True,
         )
 
@@ -31,7 +37,7 @@ class MedaiCrew:
     def research_agent(self) -> Agent:
         return Agent(
             config=self.agents_config["research_agent"],
-            tools=[self.medical_retriever_tool],
+            tools=[self.pubmed_search_tool],
             llm=get_llm("gemini-1.5-pro"),
             verbose=True,
         )
@@ -40,7 +46,7 @@ class MedaiCrew:
     def guideline_compliance_agent(self) -> Agent:
         return Agent(
             config=self.agents_config["guideline_compliance_agent"],
-            tools=[self.medical_retriever_tool],
+            tools=[self.ahrq_search_tool, self.medical_retriever_tool],
             llm=get_llm("gemini-1.5-pro"),
             verbose=True,
         )
@@ -49,7 +55,6 @@ class MedaiCrew:
     def contraindication_ddi_agent(self) -> Agent:
         return Agent(
             config=self.agents_config["contraindication_ddi_agent"],
-            tools=[self.medical_retriever_tool],
             llm=get_llm("gemini-1.5-pro"),
             verbose=True,
         )
@@ -131,12 +136,13 @@ class PatientTriageCrew:
     agents_config = "config/triage_agents.yaml"
     tasks_config = "config/triage_tasks.yaml"
     medical_retriever_tool = MedicalKnowledgeRetrieverTool()
+    symptom_tool = SymptomToDiseaseTool()
 
     @agent
     def patient_triage_agent(self) -> Agent:
         return Agent(
             config=self.agents_config["patient_triage_agent"],
-            tools=[self.medical_retriever_tool],
+            tools=[self.medical_retriever_tool, self.symptom_tool],
             llm=get_llm("gemini-1.5-pro"),
             verbose=True,
             allow_delegation=False,
@@ -165,12 +171,14 @@ class CaseGeneratorCrew:
     agents_config = "config/case_generator_agents.yaml"
     tasks_config = "config/case_generator_tasks.yaml"
     medical_retriever_tool = MedicalKnowledgeRetrieverTool()
+    pubmed_search_tool = PubMedSearchTool()
+    ahrq_search_tool = AHRQSearchTool()
 
     @agent
     def case_generator_agent(self) -> Agent:
         return Agent(
             config=self.agents_config["case_generator_agent"],
-            tools=[self.medical_retriever_tool],
+            tools=[self.medical_retriever_tool, self.pubmed_search_tool, self.ahrq_search_tool],
             verbose=True,
             allow_delegation=False,
         )
