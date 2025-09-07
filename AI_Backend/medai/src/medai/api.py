@@ -49,7 +49,6 @@ def health_check():
     """A simple endpoint to confirm the server is running."""
     return {"status": "ok"}
 
-    
 @app.get("/")
 def read_root():
     return {
