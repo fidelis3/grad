@@ -1,6 +1,8 @@
 import os
+import requests
 from dotenv import load_dotenv
-from typing import Dict, Any, Literal
+from langchain_core.prompts import ChatPromptTemplate
+from typing import Dict, Any, Literal, List
 
 load_dotenv()
 
@@ -55,7 +57,27 @@ class TriageCrewRunnable(Runnable):
     def invoke(self, input: Dict, config: RunnableConfig = None):
         crew_inputs = {"symptoms": input["symptom_description"]}
         result = PatientTriageCrew().crew().kickoff(inputs=crew_inputs)
-        return {"output": result.raw}
+        report_text = result.raw
+        
+        if "monitor" in report_text.lower():
+            print("INFO: 'Monitor' detected. Triggering n8n follow-up workflow.")
+
+            n8n_webhook_url = "https://nutnell.app.n8n.cloud/webhook-test/webhook-trigger" 
+            
+            payload = {
+                "patient_id": "user_123",
+                "symptoms": input['symptom_description'],
+                "recommendation": report_text
+            }
+            try:
+                requests.post(n8n_webhook_url, json=payload)
+                print("INFO: Successfully triggered n8n workflow.")
+            except Exception as e:
+                print(f"ERROR: Failed to trigger n8n workflow. Error: {e}")
+
+        return {"output": report_text}
+
+
 
 
 class DiagnosticCrewRunnable(Runnable):
@@ -121,15 +143,30 @@ SimpleRAGChain = (
     | RunnableLambda(lambda text: {"output": text})
 )
 
-DoctorRouterChain = DOCTOR_ROUTER_PROMPT | openai_gpt4o.with_structured_output(
-    DoctorRouteQuery
+class ExtractedPatientData(BaseModel):
+    symptoms: str = Field(description="The detailed list of the patient's symptoms.")
+    duration: str = Field(description="The duration of the symptoms.")
+    severity: str = Field(description="The severity of the symptoms.")
+    medical_history: str = Field(description="The patient's relevant medical history.")
+    additional_notes: str = Field(description="Any additional notes or context.")
+    current_date: str = Field(description="The current date, formatted as Month Day, Year.")
+
+DataExtractorChain = (
+    ChatPromptTemplate.from_template("Extract the following fields from the user's request:\n{format_instructions}\n\nRequest:\n{request}")
+    | openai_gpt4o.with_structured_output(ExtractedPatientData)
 )
 
+class DiagnosticCrewRunnable(Runnable):
+    def invoke(self, input: str, config: RunnableConfig = None) -> Dict[str, Any]:
+        extracted_data = DataExtractorChain.invoke({"request": input, "format_instructions": ExtractedPatientData.schema()})
+        result = MedaiCrew().crew().kickoff(inputs=extracted_data.dict())
+        return {"output": result.raw}
+
+DoctorRouterChain = DOCTOR_ROUTER_PROMPT | openai_gpt4o.with_structured_output(DoctorRouteQuery)
+
 DoctorBranch = RunnableBranch(
-    (
-        lambda x: x["route"].route == "report_generation",
-        RunnableLambda(lambda x: x["input"]) | DiagnosticCrewRunnable(),
-    ),
+    (lambda x: x["route"].route == "report_generation", 
+     RunnableLambda(lambda x: x["standalone_question"]) | DiagnosticCrewRunnable()),
     RunnableLambda(lambda x: x["standalone_question"]) | SimpleRAGChain,
 )
 
@@ -137,17 +174,9 @@ _doctor_master_chain = (
     RunnablePassthrough.assign(
         standalone_question=lambda x: (
             CONDENSE_QUESTION_PROMPT | openai_gpt4o_mini | StrOutputParser()
-        ).invoke(
-            {
-                "chat_history": get_buffer_string(x.get("chat_history", [])),
-                "question": x["input"],
-            }
-        )
+        ).invoke({"chat_history": get_buffer_string(x.get('chat_history', [])), "question": x['input']})
     )
-    | RunnablePassthrough.assign(
-        route=RunnableLambda(lambda x: {"question": x["standalone_question"]})
-        | DoctorRouterChain
-    )
+    | RunnablePassthrough.assign(route=RunnableLambda(lambda x: {"question": x["standalone_question"]}) | DoctorRouterChain)
     | DoctorBranch
 )
 

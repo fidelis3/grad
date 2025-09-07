@@ -17,7 +17,7 @@ app = FastAPI(
     version="3.0.0"
 )
 
-class AppInput(BaseModel):
+class ChatInput(BaseModel):
     input: Union[str, Dict[str, Any]]
 
 add_routes(
@@ -40,7 +40,7 @@ add_routes(
 
 add_routes(
     app,
-    DoctorMasterChain,
+    DoctorMasterChain.with_types(input_type=ChatInput),
     path="/api/doctor/chat"
 )
 

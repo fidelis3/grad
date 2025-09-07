@@ -1,18 +1,14 @@
 ## Understanding Your Symptoms
 
-Shortness of breath is a feeling of not being able to get enough air.  Swollen legs, also known as edema, occur when excess fluid builds up in the leg tissues. These symptoms can sometimes occur together and can be related to various underlying factors.
+A cut on the cheek, even if it's not bleeding heavily, involves a break in the skin's surface.  The body's natural response is to begin the healing process, which may involve some mild discomfort or redness.
 
 ## What This Might Mean
 
-Several factors can contribute to shortness of breath and swollen legs.  These include:
-
-*   Issues with cardiovascular health.
-*   Problems affecting lung function.
-*   Kidney-related issues.
-*   Inflammatory reactions in the body.
+* **Minor trauma:**  Everyday activities can sometimes lead to minor cuts, such as bumping into something or a slight nick while shaving.
+* **Superficial skin injury:** The cut is likely limited to the outer layers of skin, hence the minimal bleeding.
 
 ## Recommended Next Step
 
-It is recommended to schedule an appointment with a doctor to discuss these symptoms. They can properly evaluate your individual situation, conduct any necessary tests, and provide a definitive diagnosis and appropriate treatment plan. 
+You can safely monitor this at home. Gently clean the area with mild soap and water, and pat it dry. If desired, you can apply a small bandage. Avoid touching the area unnecessarily. If you notice increasing redness, swelling, pain, or any discharge, please schedule an appointment with a doctor or nurse practitioner.
 
 *This is for informational purposes only and is not a substitute for professional medical advice.*
