@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
-// SVG Icon Components
+
 const TwitterIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24">
     <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
@@ -43,7 +43,7 @@ const Register: React.FC = () => {
             ...prev,
             [name]: value
         }));
-        // Clear errors when user starts typing
+     
         if (error) setError('');
     };
 
@@ -53,7 +53,7 @@ const Register: React.FC = () => {
         setError('');
         setSuccess('');
 
-        // Validate passwords match
+     
         if (formData.password !== formData.confirmPassword) {
             setError('Passwords do not match');
             setIsSubmitting(false);
@@ -99,9 +99,9 @@ const Register: React.FC = () => {
 
     return (
         <div className="h-screen flex">
-            {/* Left Column - Blue Background with Welcome Text and Image */}
+         
             <div className="hidden lg:flex lg:w-1/2 bg-blue-900 flex-col justify-center items-center px-8">
-                {/* Welcome Text */}
+           
                 <div className="text-center mb-6">
                     <h1 className="text-3xl xl:text-4xl font-bold text-white mb-2" style={{ fontFamily: 'var(--font-yeseva-one)' }}>
                         Welcome To
@@ -112,7 +112,7 @@ const Register: React.FC = () => {
                     </h1>
                 </div>
                 
-                {/* Login Image */}
+             
                 <div className="relative w-full max-w-sm h-64 xl:h-72">
                     <Image
                         src="/Images/Doctor1.jpg"
@@ -124,11 +124,11 @@ const Register: React.FC = () => {
                 </div>
             </div>
 
-            {/* Right Column - Registration Form */}
+           
             <div className="w-full lg:w-1/2 bg-white flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8">
                 <div className="max-w-sm w-full space-y-4">
                     
-                    {/* Mobile Welcome Text - Only shown on mobile */}
+                
                     <div className="lg:hidden text-center mb-6">
                         <h1 className="text-2xl font-bold text-blue-900 mb-1" style={{ fontFamily: 'var(--font-yeseva-one)' }}>
                             Welcome To
@@ -164,7 +164,7 @@ const Register: React.FC = () => {
                             </div>
                         )}
                         
-                        {/* Full Name */}
+           
                         <div>
                             <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'var(--font-work-sans)' }}>
                                 Full Name
@@ -181,8 +181,7 @@ const Register: React.FC = () => {
                                 onChange={handleInputChange}
                             />
                         </div>
-                        
-                        {/* Email */}
+                 
                         <div>
                             <label htmlFor="emailAddress" className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'var(--font-work-sans)' }}>
                                 Email
@@ -200,7 +199,7 @@ const Register: React.FC = () => {
                             />
                         </div>
 
-                        {/* Professional Role */}
+                     
                         <div>
                             <label htmlFor="professionalRole" className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'var(--font-work-sans)' }}>
                                 Professional Role
@@ -220,7 +219,6 @@ const Register: React.FC = () => {
                             </select>
                         </div>
 
-                        {/* Password */}
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'var(--font-work-sans)' }}>
                                 Password
@@ -238,7 +236,7 @@ const Register: React.FC = () => {
                             />
                         </div>
 
-                        {/* Confirm Password */}
+                      
                         <div>
                             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'var(--font-work-sans)' }}>
                                 Confirm Password
@@ -256,7 +254,7 @@ const Register: React.FC = () => {
                             />
                         </div>
 
-                        {/* Create Account Button */}
+                      
                         <div className="pt-2">
                             <button
                                 type="submit"
@@ -268,7 +266,7 @@ const Register: React.FC = () => {
                             </button>
                         </div>
 
-                        {/* Sign In Link */}
+                   
                         <div className="text-center pt-2">
                             <p className="text-sm" style={{ fontFamily: 'var(--font-work-sans)' }}>
                                 <span className="text-black">Already have an account? </span>
@@ -284,7 +282,7 @@ const Register: React.FC = () => {
                         </div>
                     </form>
 
-                    {/* Social Media Icons */}
+                 
                     <div className="pt-6">
                         <div className="flex justify-center space-x-6">
                             <button className="text-gray-600 hover:text-blue-500 transition-colors">
