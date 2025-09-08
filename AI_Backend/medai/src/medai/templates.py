@@ -32,15 +32,65 @@ DOCTOR_ROUTER_PROMPT = ChatPromptTemplate.from_messages([
 ])
 
 STUDENT_ROUTER_PROMPT = ChatPromptTemplate.from_messages([
-    ("system", """You are an expert at routing a student's or researcher's request.
-     You must select one of the following routes: 'case_study' for generating clinical case studies, or 'rag_query' for simple questions and explanations.
+    ("system", """You are an expert at routing a student or researcher's request to the correct workflow.
+     You must select one of the following routes: 'deep_research', 'case_study', 'summarize', 'quiz_generation', 'flashcard_generation', or 'rag_query'.
 
      --- EXAMPLES ---
-     User Query: "Create a case study about acute appendicitis." -> ROUTE: case_study
-     User Query: "What is the pathophysiology of Type 1 Diabetes?" -> ROUTE: rag_query
+     User Query: "Summarize the latest research on CRISPR for treating sickle cell anemia." -> ROUTE: deep_research
+     User Query: "Give me a case study on multiple sclerosis." -> ROUTE: case_study
+     User Query: "Summarize this for me: [text]" -> ROUTE: summarize
+     User Query: "Create a 5-question quiz on the Krebs cycle." -> ROUTE: quiz_generation
+     User Query: "Make me some flashcards for the main types of antibiotics." -> ROUTE: flashcard_generation
+     User Query: "Explain the pathophysiology of Parkinson's disease." -> ROUTE: rag_query
+     User Query: "Hello" -> ROUTE: rag_query 
      """),
     ("human", "{question}")
 ])
+
+QUIZ_GENERATOR_PROMPT = ChatPromptTemplate.from_template(
+    """You are a medical school professor creating a challenging, open-ended quiz for a medical student on the topic of '{topic}'.
+Your task is to create 3-5 thought-provoking questions that require clinical reasoning, not just simple recall. 
+After the questions, you MUST provide a separate section with detailed answers for comparison.
+
+--- EXAMPLE OF THE REQUIRED FORMAT ---
+**Topic:** Hypertension
+
+**Questions:**
+1. A 65-year-old patient on hydrochlorothiazide for hypertension presents with muscle weakness. What is the likely electrolyte imbalance, and what is the physiological mechanism?
+2. Why is an ACE inhibitor often a first-line choice for a patient with both hypertension and diabetes?
+
+---
+**Detailed Answers:**
+1. **Answer:** The likely imbalance is hypokalemia (low potassium). Thiazide diuretics increase the excretion of potassium in the urine, which can lead to depleted levels, causing muscle weakness.
+2. **Answer:** ACE inhibitors have a nephroprotective (kidney-protective) effect by reducing pressure in the glomeruli. This is particularly beneficial for patients with diabetes, who are at high risk for diabetic nephropathy.
+--- END OF EXAMPLE ---
+
+Now, using the provided context, generate a quiz in the same two-part format.
+
+Context:
+{context}
+
+Quiz:"""
+)
+
+# In src/medai/prompts/templates.py
+
+FLASHCARD_GENERATOR_PROMPT = ChatPromptTemplate.from_template(
+    """You are an expert instructional designer creating clinical scenario-based flashcards for medical students on the topic of '{topic}'.
+The front of each card MUST be a patient presentation or clinical scenario. The back MUST be the most likely diagnosis or the next best step in management.
+
+--- EXAMPLE OF THE REQUIRED FORMAT ---
+**Front:** A 62-year-old male with a history of smoking and hyperlipidemia presents with 2 hours of crushing substernal chest pain and an ECG showing ST-segment elevation in the anterior leads (V1-V4).
+**Back:** Diagnosis: Acute Anterior STEMI (ST-Elevation Myocardial Infarction). The findings are indicative of an occlusion of the Left Anterior Descending (LAD) artery.
+--- END OF EXAMPLE ---
+
+Now, using the provided context, generate 5 flashcards in this format.
+
+Context:
+{context}
+
+Flashcards:"""
+)
 
 PATIENT_ROUTER_PROMPT = ChatPromptTemplate.from_messages([
     ("system", """You are an expert at routing a patient's request to the correct workflow based on their intent.
