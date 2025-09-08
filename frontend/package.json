@@ -32,14 +32,5 @@
     "next-auth": "^4.24.11",
     "tailwindcss": "^4",
     "typescript": "^5"
-  },
-  "jest": {
-    "testEnvironment": "jsdom",
-    "setupFilesAfterEnv": [
-      "<rootDir>/jest.setup.js"
-    ],
-    "moduleNameMapping": {
-      "^@/(.*)$": "<rootDir>/$1"
-    }
   }
 }

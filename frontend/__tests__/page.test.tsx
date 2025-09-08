@@ -4,10 +4,21 @@ import userEvent from '@testing-library/user-event';
 import { useRouter } from 'next/navigation';
 import OnboardingPage from '../app/page';
 
+interface MockImageProps {
+  src: string;
+  alt: string;
+  width?: number;
+  height?: number;
+  fill?: boolean;
+  priority?: boolean;
+  className?: string;
+  style?: React.CSSProperties;
+  [key: string]: unknown;
+}
 
 jest.mock('next/image', () => ({
   __esModule: true,
-  default: (props: any) => {
+  default: (props: MockImageProps) => {
     
     return <img {...props} />;
   },
