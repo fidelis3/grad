@@ -8,46 +8,41 @@ from .chains import (
     DiagnosticConversationChain,
     PatientTriageChain,
     ClinicalCaseGeneratorChain,
-    DoctorMasterChain
+    DoctorMasterChain,
+    PatientMasterChain,
 )
 
 app = FastAPI(
     title="Medical Diagnosis Aid API",
     description="Provides direct-action and conversational AI endpoints for different user roles.",
-    version="3.0.0"
+    version="3.0.0",
 )
+
 
 class ChatInput(BaseModel):
     input: Union[str, Dict[str, Any]]
 
+
+add_routes(app, DiagnosticConversationChain, path="/api/doctor/generate-report")
+
+add_routes(app, PatientTriageChain, path="/api/patient/triage")
+
+add_routes(app, ClinicalCaseGeneratorChain, path="/api/student/generate-case")
+
 add_routes(
-    app, 
-    DiagnosticConversationChain, 
-    path="/api/doctor/generate-report"
+    app, DoctorMasterChain.with_types(input_type=ChatInput), path="/api/doctor/chat"
 )
 
 add_routes(
-    app, 
-    PatientTriageChain, 
-    path="/api/patient/triage"
+    app, PatientMasterChain.with_types(input_type=ChatInput), path="/api/patient/chat"
 )
 
-add_routes(
-    app,
-    ClinicalCaseGeneratorChain,
-    path="/api/student/generate-case"
-)
-
-add_routes(
-    app,
-    DoctorMasterChain.with_types(input_type=ChatInput),
-    path="/api/doctor/chat"
-)
 
 @app.get("/health")
 def health_check():
     """A simple endpoint to confirm the server is running."""
     return {"status": "ok"}
+
 
 @app.get("/")
 def read_root():

@@ -43,12 +43,57 @@ STUDENT_ROUTER_PROMPT = ChatPromptTemplate.from_messages([
 ])
 
 PATIENT_ROUTER_PROMPT = ChatPromptTemplate.from_messages([
-    ("system", """You are an expert at routing a patient's request.
-     You must select one of the following routes: 'triage_request' for analyzing symptoms, or 'rag_query' for simple health-related questions.
+    ("system", """You are an expert at routing a patient's request to the correct workflow based on their intent.
+     You must select one of the following routes: 'triage_request', 'clarification_needed', 'desperation_query', 'rag_query', 'greeting', or 'emotional_follow_up'.
 
      --- EXAMPLES ---
-     User Query: "I have a sharp pain in my side and a fever." -> ROUTE: triage_request
-     User Query: "What is hypertension?" -> ROUTE: rag_query
+
+     User Query: "I have had a sharp pain in my chest and my left arm feels numb."
+     Thought: The user has described specific, clear symptoms. This is a direct request for a symptom check.
+     ROUTE: triage_request
+
+     User Query: "OMG! Am I going to die now?"
+     Thought: The user has already received a triage report and is now expressing fear and asking a follow-up question. This is not a new symptom report. I should route this to a simple, reassuring response chain.
+     ROUTE: emotional_follow_up
+     
+     User Query: "Hello there"
+     Thought: The user is just saying hello. This is a simple greeting.
+     ROUTE: greeting
+
+     User Query: "I feel sick"
+     Thought: The user has stated a symptom but it is too vague. I need to ask for more information before I can proceed with a triage.
+     ROUTE: clarification_needed
+
+     User Query: "I have had a sharp pain in my chest and my left arm feels numb."
+     Thought: The user has described specific, clear symptoms. This is a direct request for a symptom check.
+     ROUTE: triage_request
+
+     User Query: "What is diabetes?"
+     Thought: The user is asking a general health question, not describing their own symptoms. This can be answered with a simple information retrieval.
+     ROUTE: rag_query
+
+     User Query: "Am I having a heart attack? I'm so scared."
+     Thought: The user is expressing fear and asking about a serious condition. This is a desperation query. I need to route this to the triage workflow, but also flag it for a reassuring response.
+     ROUTE: desperation_query
+     """),
+    ("human", "{question}")
+])
+
+SAFETY_ROUTER_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", """You are a safety classification expert for a medical AI assistant.
+     You must classify the user's query into one of four categories: 'safe_query', 'off_topic_query', 'dangerous_query', or 'self_harm_statement'.
+
+     --- DEFINITIONS ---
+     - 'safe_query': The user is describing symptoms, asking a general health topic, or using a simple conversational greeting.
+     - 'off_topic_query': The user is asking about something not related to human health.
+     - 'dangerous_query': The user is asking for a specific cure, prescription, or information on harmful substances.
+     - 'self_harm_statement': The user expresses thoughts of dying, self-harm, or hopelessness.
+
+     --- EXAMPLES ---
+     User Query: "I wish I could just die" -> ROUTE: self_harm_statement
+     User Query: "Hello" -> ROUTE: safe_query
+     User Query: "Explain langchain" -> ROUTE: off_topic_query
+     User Query: "What cure works best for hypertension?" -> ROUTE: dangerous_query
      """),
     ("human", "{question}")
 ])
