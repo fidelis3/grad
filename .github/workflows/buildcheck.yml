@@ -2,10 +2,10 @@ name: PR Checks
 
 on:
   pull_request:
-    branches: [ main, master ]
+    branches: [ master ]
     paths:
-      - "backend/"
-      - "frontend/"
+      - "backend/**"
+      - "frontend/**"
     
 
 concurrency:
