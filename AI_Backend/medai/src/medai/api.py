@@ -37,6 +37,9 @@ add_routes(
     app, PatientMasterChain.with_types(input_type=ChatInput), path="/api/patient/chat"
 )
 
+add_routes(
+    app, StudentMasterChain.with_types(input_type=ChatInput), path="/api/student/chat"
+)
 
 @app.get("/health")
 def health_check():

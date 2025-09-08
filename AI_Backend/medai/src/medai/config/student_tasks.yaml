@@ -1,0 +1,14 @@
+literature_review_task:
+  description: "Search PubMed for the most relevant and recent scientific papers and clinical trials on the topic: {topic}."
+  expected_output: "A bulleted list of the top 3-5 most relevant PubMed abstracts, including titles, authors, and PMIDs."
+  agent: literature_review_agent
+
+guideline_analysis_task:
+  description: "Search the AHRQ database and our local knowledge base for official clinical practice guidelines related to the topic: {topic}."
+  expected_output: "A summary of the most relevant clinical guideline found, including its title and key recommendations."
+  agent: guideline_analyst_agent
+
+deep_research_task:
+  description: "Synthesize the findings from the literature review and the guideline analysis into a final, comprehensive research summary on the topic: {topic}. Your final report should be well-structured and include a bibliography with correctly formatted citations for all sources."
+  expected_output: "A detailed, multi-paragraph research summary. It must include a section for 'Recent Literature', a section for 'Clinical Guidelines', and a concluding 'Bibliography' section."
+  agent: summarization_agent
