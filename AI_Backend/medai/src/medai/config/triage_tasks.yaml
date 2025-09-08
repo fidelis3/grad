@@ -1,6 +1,6 @@
 # In config/triage_tasks.yaml
 patient_triage_task:
-  description: >-
+  description: |
     You are a triage nurse. A patient has submitted symptoms. Your task is to analyze them and provide a safe recommendation.
     Follow the examples below to understand the expected format and tone for different severity levels.
 
@@ -22,7 +22,7 @@ patient_triage_task:
 
     YOUR TASK:
     A patient has submitted the following symptoms: {symptoms}.
-    1. Use your tool to research general information related to these symptoms.
+    1. Use your tools to research general information related to these symptoms.
     2. Write a simple, reassuring explanation.
     3. Provide a list of potential, non-alarming causes.
     4. Conclude with a clear, safe, and actionable recommendation for the patient's next step, following the style of the examples.

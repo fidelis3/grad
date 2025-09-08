@@ -27,7 +27,11 @@ from .templates import (
     CONDENSE_QUESTION_PROMPT,
     SIMPLE_RAG_PROMPT,
     DOCTOR_ROUTER_PROMPT,
+    PATIENT_ROUTER_PROMPT,
+    STUDENT_ROUTER_PROMPT,
+    SAFETY_ROUTER_PROMPT,
 )
+
 
 class TriageInput(BaseModel):
     symptom_description: str = Field(
@@ -53,21 +57,24 @@ class CaseGeneratorInput(BaseModel):
 class DoctorRouteQuery(BaseModel):
     route: Literal["report_generation", "rag_query"]
 
+
 class TriageCrewRunnable(Runnable):
     def invoke(self, input: Dict, config: RunnableConfig = None):
         crew_inputs = {"symptoms": input["symptom_description"]}
         result = PatientTriageCrew().crew().kickoff(inputs=crew_inputs)
         report_text = result.raw
-        
+
         if "monitor" in report_text.lower():
             print("INFO: 'Monitor' detected. Triggering n8n follow-up workflow.")
 
-            n8n_webhook_url = "https://nutnell.app.n8n.cloud/webhook-test/webhook-trigger" 
-            
+            n8n_webhook_url = (
+                "https://nutnell.app.n8n.cloud/webhook-test/webhook-trigger"
+            )
+
             payload = {
                 "patient_id": "user_123",
-                "symptoms": input['symptom_description'],
-                "recommendation": report_text
+                "symptoms": input["symptom_description"],
+                "recommendation": report_text,
             }
             try:
                 requests.post(n8n_webhook_url, json=payload)
@@ -78,8 +85,6 @@ class TriageCrewRunnable(Runnable):
         return {"output": report_text}
 
 
-
-
 class DiagnosticCrewRunnable(Runnable):
     def invoke(self, input: Dict, config: RunnableConfig = None):
         return MedaiCrew().crew().kickoff(inputs=input)
@@ -88,6 +93,7 @@ class DiagnosticCrewRunnable(Runnable):
 class CaseGeneratorRunnable(Runnable):
     def invoke(self, input: Dict, config: RunnableConfig = None):
         return CaseGeneratorCrew().crew().kickoff(inputs=input)
+
 
 PatientTriageChain = TriageCrewRunnable().with_types(input_type=TriageInput)
 DiagnosticConversationChain = DiagnosticCrewRunnable().with_types(
@@ -107,10 +113,12 @@ gemini_pro = ChatGoogleGenerativeAI(
 
 memories = {}
 
+
 def get_memory_for_session(session_id: str):
     if session_id not in memories:
         memories[session_id] = ChatMessageHistory()
     return memories[session_id]
+
 
 class DiagnosticInput(BaseModel):
     symptoms: str = Field(description="The detailed list of the patient's symptoms.")
@@ -130,10 +138,13 @@ class DiagnosticCrewRunnable(Runnable):
         result = MedaiCrew().crew().kickoff(inputs=input)
         return {"output": result.raw}
 
+
 retriever = MedicalKnowledgeRetrieverTool()
+
 
 def format_docs(docs: list) -> str:
     return "\n\n---\n\n".join([str(d) for d in docs])
+
 
 SimpleRAGChain = (
     {"context": RunnableLambda(retriever.run), "question": RunnablePassthrough()}
@@ -143,30 +154,41 @@ SimpleRAGChain = (
     | RunnableLambda(lambda text: {"output": text})
 )
 
+
 class ExtractedPatientData(BaseModel):
     symptoms: str = Field(description="The detailed list of the patient's symptoms.")
     duration: str = Field(description="The duration of the symptoms.")
     severity: str = Field(description="The severity of the symptoms.")
     medical_history: str = Field(description="The patient's relevant medical history.")
     additional_notes: str = Field(description="Any additional notes or context.")
-    current_date: str = Field(description="The current date, formatted as Month Day, Year.")
+    current_date: str = Field(
+        description="The current date, formatted as Month Day, Year."
+    )
 
-DataExtractorChain = (
-    ChatPromptTemplate.from_template("Extract the following fields from the user's request:\n{format_instructions}\n\nRequest:\n{request}")
-    | openai_gpt4o.with_structured_output(ExtractedPatientData)
-)
+
+DataExtractorChain = ChatPromptTemplate.from_template(
+    "Extract the following fields from the user's request:\n{format_instructions}\n\nRequest:\n{request}"
+) | openai_gpt4o.with_structured_output(ExtractedPatientData)
+
 
 class DiagnosticCrewRunnable(Runnable):
     def invoke(self, input: str, config: RunnableConfig = None) -> Dict[str, Any]:
-        extracted_data = DataExtractorChain.invoke({"request": input, "format_instructions": ExtractedPatientData.schema()})
+        extracted_data = DataExtractorChain.invoke(
+            {"request": input, "format_instructions": ExtractedPatientData.schema()}
+        )
         result = MedaiCrew().crew().kickoff(inputs=extracted_data.dict())
         return {"output": result.raw}
 
-DoctorRouterChain = DOCTOR_ROUTER_PROMPT | openai_gpt4o.with_structured_output(DoctorRouteQuery)
+
+DoctorRouterChain = DOCTOR_ROUTER_PROMPT | openai_gpt4o.with_structured_output(
+    DoctorRouteQuery
+)
 
 DoctorBranch = RunnableBranch(
-    (lambda x: x["route"].route == "report_generation", 
-     RunnableLambda(lambda x: x["standalone_question"]) | DiagnosticCrewRunnable()),
+    (
+        lambda x: x["route"].route == "report_generation",
+        RunnableLambda(lambda x: x["standalone_question"]) | DiagnosticCrewRunnable(),
+    ),
     RunnableLambda(lambda x: x["standalone_question"]) | SimpleRAGChain,
 )
 
@@ -174,14 +196,136 @@ _doctor_master_chain = (
     RunnablePassthrough.assign(
         standalone_question=lambda x: (
             CONDENSE_QUESTION_PROMPT | openai_gpt4o_mini | StrOutputParser()
-        ).invoke({"chat_history": get_buffer_string(x.get('chat_history', [])), "question": x['input']})
+        ).invoke(
+            {
+                "chat_history": get_buffer_string(x.get("chat_history", [])),
+                "question": x["input"],
+            }
+        )
     )
-    | RunnablePassthrough.assign(route=RunnableLambda(lambda x: {"question": x["standalone_question"]}) | DoctorRouterChain)
+    | RunnablePassthrough.assign(
+        route=RunnableLambda(lambda x: {"question": x["standalone_question"]})
+        | DoctorRouterChain
+    )
     | DoctorBranch
 )
 
 DoctorMasterChain = RunnableWithMessageHistory(
     _doctor_master_chain,
+    get_memory_for_session,
+    input_messages_key="input",
+    history_messages_key="chat_history",
+)
+
+class PatientRouteQuery(BaseModel):
+    route: Literal["triage_request", "clarification_needed", "desperation_query", "rag_query", "greeting", "emotional_follow_up"]
+
+CRISIS_RESPONSE_TEXT = (
+    "It sounds like you are going through a difficult time. Please know that there is help available. "
+    "I am an AI assistant and not qualified to provide the support you need, but talking to someone can help. "
+    "Please consider reaching out to a crisis support hotline in your region. Help is available, and you don't have to go through this alone."
+)
+CrisisResponseChain = RunnableLambda(lambda _: {"output": CRISIS_RESPONSE_TEXT})
+
+
+class SafetyRouteQuery(BaseModel):
+    route: Literal["safe_query", "off_topic_query", "dangerous_query", "self_harm_statement"]
+
+OffTopicResponseChain = RunnableLambda(lambda _: {"output": "I am a medical AI assistant and can only help with health-related questions. How can I assist you with a medical topic?"})
+DangerousQueryResponseChain = RunnableLambda(lambda _: {"output": "I cannot provide specific medical advice, cures, or prescriptions. For any medical treatment, it is essential to consult with a qualified healthcare professional. If you are in a crisis, please contact your local emergency services immediately."})
+
+GreetingChain = (
+    ChatPromptTemplate.from_template(
+        "You are a friendly and empathetic medical assistant. The user said: '{question}'. Respond with a warm and welcoming greeting."
+    )
+    | openai_gpt4o_mini
+    | StrOutputParser()
+    | RunnableLambda(lambda text: {"output": text})
+)
+
+ClarificationChain = (
+    ChatPromptTemplate.from_template(
+        "The user's symptom description is too vague: '{question}'. Ask them clarifying questions to get more details. For example: 'I understand you're not feeling well. Could you please tell me more about your symptoms? For example, where is the pain, what does it feel like, and how long have you had it?'"
+    )
+    | openai_gpt4o_mini
+    | StrOutputParser()
+    | RunnableLambda(lambda text: {"output": text})
+)
+
+def create_reassurance_wrapper(triage_output: Dict) -> Dict:
+    reassuring_intro = "I understand this is a worrying time, but I'm here to help you understand the next steps. It's important not to jump to conclusions, as many things can cause these symptoms. Here is some information based on what you've described:\n\n"
+    final_report = triage_output.get("output", "")
+    reassuring_outro = "\n\nPlease remember, this information is to help you, and the most important thing is to follow the 'Recommended Next Step'. A medical professional can give you a proper diagnosis. You are taking the right step by seeking information."
+    return {"output": reassuring_intro + final_report + reassuring_outro}
+
+
+PatientRouterChain = PATIENT_ROUTER_PROMPT | openai_gpt4o.with_structured_output(
+    PatientRouteQuery
+)
+
+PatientBranch = RunnableBranch(
+    (
+        lambda x: x["route"].route == "triage_request",
+        RunnableLambda(lambda x: {"symptom_description": x["input"]})
+        | PatientTriageChain,
+    ),
+    (
+        lambda x: x["route"].route == "desperation_query",
+        RunnableLambda(lambda x: {"symptom_description": x["input"]})
+        | PatientTriageChain
+        | RunnableLambda(create_reassurance_wrapper),
+    ),
+    (
+        lambda x: x["route"].route == "clarification_needed",
+        RunnableLambda(lambda x: {"question": x["input"]}) | ClarificationChain,
+    ),
+    (
+        lambda x: x["route"].route == "greeting",
+        RunnableLambda(lambda x: {"question": x["input"]}) | GreetingChain,
+    ),
+
+    RunnablePassthrough.assign(
+        standalone_question=lambda x: (
+            CONDENSE_QUESTION_PROMPT | openai_gpt4o_mini | StrOutputParser()
+        ).invoke(
+            {
+                "chat_history": get_buffer_string(x.get("chat_history", [])),
+                "question": x["input"],
+            }
+        )
+    )
+    | RunnableLambda(lambda x: x["standalone_question"])
+    | SimpleRAGChain,
+)
+
+_patient_conversational_logic = (
+    RunnablePassthrough.assign(
+        standalone_question=lambda x: (
+            CONDENSE_QUESTION_PROMPT | openai_gpt4o_mini | StrOutputParser()
+        ).invoke({"chat_history": get_buffer_string(x.get('chat_history', [])), "question": x['input']})
+    )
+    | RunnablePassthrough.assign(route=RunnableLambda(lambda x: {"question": x["standalone_question"]}) | PatientRouterChain)
+    | PatientBranch
+)
+
+SafetyRouterChain = SAFETY_ROUTER_PROMPT | openai_gpt4o.with_structured_output(SafetyRouteQuery)
+
+SafetyBranch = RunnableBranch(
+    (lambda x: x["safety_route"].route == "self_harm_statement", CrisisResponseChain),
+    (lambda x: x["safety_route"].route == "off_topic_query", OffTopicResponseChain),
+    (lambda x: x["safety_route"].route == "dangerous_query", DangerousQueryResponseChain),
+    _patient_conversational_logic,
+)
+
+_patient_master_chain_with_safety = (
+    RunnablePassthrough.assign(
+        safety_route=RunnableLambda(lambda x: {"question": x["input"]}) | SafetyRouterChain
+    )
+    | SafetyBranch
+)
+
+PatientMasterChain = RunnableWithMessageHistory(
+    _patient_master_chain_with_safety,
     get_memory_for_session,
     input_messages_key="input",
     history_messages_key="chat_history",
