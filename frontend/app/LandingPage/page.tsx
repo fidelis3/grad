@@ -252,7 +252,7 @@ export default function Home() {
               </div>
               </div>
               <button 
-              onClick={() => router.push('/Services')}
+              onClick={() => router.push('/services/all')}
               className="w-full py-2 bg-blue-900 text-blue-100 rounded-full hover:bg-blue-800 transition-colors text-sm"
               >
               View All
