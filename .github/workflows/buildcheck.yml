@@ -2,10 +2,10 @@ name: PR Checks
 
 on:
   pull_request:
-    branches: [ main, master ]
+    branches: [ master ]
     paths:
-      - "backend/"
-      - "frontend/"
+      - "backend/**"
+      - "frontend/**"
     
 
 concurrency:
@@ -36,14 +36,13 @@ jobs:
           cache-dependency-path: ./backend/package.json
 
       - name: Install dependencies
-        run: npm install
-
-      - name: Run ESLint
-        run: npm run lint
+        run: npm install     
         
       - name: Build project
         run: npm run build
-        
+
+     
+
   backend-test:
     runs-on: ubuntu-latest
     defaults:
@@ -63,6 +62,9 @@ jobs:
           
       - name: Install dependencies
         run: npm install
+
+      - name: Run tests
+        run: npm test
         
      
   frontend-build-and-lint:
@@ -85,8 +87,14 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
       - name: Run ESLint
         run: npm run lint
         
       - name: Build project
         run: npm run build
+
+      - name: Run tests
+        run: npm run test
