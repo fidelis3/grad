@@ -10,6 +10,7 @@ from .chains import (
     ClinicalCaseGeneratorChain,
     DoctorMasterChain,
     PatientMasterChain,
+    StudentMasterChain,
 )
 
 app = FastAPI(
