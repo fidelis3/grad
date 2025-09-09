@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 
+
 type Message = {
   sender: 'user' | 'ai';
   text: string;
