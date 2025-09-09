@@ -55,8 +55,13 @@ export default function LoginPage() {
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
                 
-     
-                router.push('/PatientPortal');
+                console.log("User data from response:", data.user);
+                
+                if (data.user.professionalRole === 'doctor') {
+                    router.push('/doctor/dashboard');
+                } else {
+                    router.push('/PatientPortal');
+                }
             } else {
                 setError(data.message || 'Login failed. Please try again.');
             }
