@@ -73,6 +73,7 @@ Context:
 Quiz:"""
 )
 
+# In src/medai/prompts/templates.py
 
 FLASHCARD_GENERATOR_PROMPT = ChatPromptTemplate.from_template(
     """You are an expert instructional designer creating clinical scenario-based flashcards for medical students on the topic of '{topic}'.
@@ -92,56 +93,41 @@ Flashcards:"""
 )
 
 PATIENT_ROUTER_PROMPT = ChatPromptTemplate.from_messages([
-    ("system", """You are an expert at routing a patient's request to the correct workflow 
-    based on their most recent message AND the conversation history.  
+    ("system", """You are an expert at routing a patient's request to the correct workflow based on their intent.
+     You must select one of the following routes: 'triage_request', 'clarification_needed', 'desperation_query', 'rag_query', 'greeting', or 'emotional_follow_up'.
 
-    You must select exactly one of the following routes:  
-    - 'triage_request' → The user has provided enough specific symptoms that triage can proceed.  
-    - 'clarification_needed' → The user has been vague or has not given enough detail to begin triage.  
-    - 'desperation_query' → The user expresses fear, panic, or worry about their condition, even if they provide symptoms.  
-    - 'rag_query' → The user asks about a general medical or health topic (definitions, conditions, treatments, research).  
-    - 'greeting' → The user says hello, good morning, thanks, or something similar.  
-    - 'emotional_follow_up' → The user expresses emotions (scared, anxious, upset) in response to a previous assistant message.  
+     --- EXAMPLES ---
 
-    --- ROUTING PRINCIPLES ---
-    - A list of multiple specific symptoms (e.g. "itchy skin, diarrhea, vomiting, swollen legs") 
-      is a **triage_request**.  
-    - If the user only says something vague like "I feel sick" or "I don't feel good", 
-      classify as **clarification_needed**.  
-    - If they are both descriptive **and** scared ("I have chest pain and I’m terrified it’s a heart attack"), 
-      classify as **desperation_query**.  
-    - Questions like "What is diabetes?" or "How does asthma work?" → **rag_query**.  
-    - "Hello", "Hi there", "Thanks" → **greeting**.  
-    - Emotional replies like "I'm scared" after your previous clarification → **emotional_follow_up**.  
+     User Query: "I have had a sharp pain in my chest and my left arm feels numb."
+     Thought: The user has described specific, clear symptoms. This is a direct request for a symptom check.
+     ROUTE: triage_request
 
-    --- EXAMPLES ---
-    User Query: "Hello there"  
-    ROUTE: greeting  
+     User Query: "OMG! Am I going to die now?"
+     Thought: The user has already received a triage report and is now expressing fear and asking a follow-up question. This is not a new symptom report. I should route this to a simple, reassuring response chain.
+     ROUTE: emotional_follow_up
+     
+     User Query: "Hello there"
+     Thought: The user is just saying hello. This is a simple greeting.
+     ROUTE: greeting
 
-    User Query: "I feel sick"  
-    ROUTE: clarification_needed  
+     User Query: "I feel sick"
+     Thought: The user has stated a symptom but it is too vague. I need to ask for more information before I can proceed with a triage.
+     ROUTE: clarification_needed
 
-    User Query: "What is diabetes?"  
-    ROUTE: rag_query  
+     User Query: "I have had a sharp pain in my chest and my left arm feels numb."
+     Thought: The user has described specific, clear symptoms. This is a direct request for a symptom check.
+     ROUTE: triage_request
 
-    User Query: "I'm so scared."  
-    ROUTE: emotional_follow_up  
+     User Query: "What is diabetes?"
+     Thought: The user is asking a general health question, not describing their own symptoms. This can be answered with a simple information retrieval.
+     ROUTE: rag_query
 
-    User Query: "I have itchy skin, constant diarrhea for 3 days, vomiting, fatigue, and a swollen left leg."  
-    ROUTE: triage_request  
-
-    User Query: "I have chest pain and I think I'm going to die."  
-    ROUTE: desperation_query  
-
-    --- CONVERSATIONAL EXAMPLE ---
-    AI previously said: "Could you please tell me more about your symptoms?"  
-    User now says: "I've had chest pains, fatigue and dizziness for the past few days."  
-    Thought: This is specific enough to proceed with triage.  
-    ROUTE: triage_request  
-    """),
+     User Query: "Am I having a heart attack? I'm so scared."
+     Thought: The user is expressing fear and asking about a serious condition. This is a desperation query. I need to route this to the triage workflow, but also flag it for a reassuring response.
+     ROUTE: desperation_query
+     """),
     ("human", "{question}")
 ])
-
 
 SAFETY_ROUTER_PROMPT = ChatPromptTemplate.from_messages([
     ("system", """You are a safety classification expert for a medical AI assistant.
