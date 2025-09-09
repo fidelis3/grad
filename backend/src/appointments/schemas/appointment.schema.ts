@@ -14,8 +14,8 @@ export class Appointment {
   @Prop({ required: false })
   patientEmail: string;
 
-  @Prop({ required: true })
-  doctorId: number;
+  @Prop({ required: true }) // Changed to string for _id
+  doctorId: string;
 
   @Prop({ required: true })
   doctorName: string;
@@ -35,8 +35,11 @@ export class Appointment {
   @Prop({ required: true })
   reason: string;
 
-  @Prop({ type: Object }) // Optional report
+  @Prop({ type: Object, default: null }) // For doctor reports
   report?: any;
+
+  @Prop({ required: true, default: 'pending' })
+  status: string; // 'pending', 'accepted', 'rejected', 'completed'
 }
 
 export const AppointmentSchema = SchemaFactory.createForClass(Appointment);

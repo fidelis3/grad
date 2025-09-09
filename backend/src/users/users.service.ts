@@ -13,6 +13,7 @@ import * as crypto from 'crypto';
 
 @Injectable()
 export class UsersService {
+  [x: string]: any;
   findByResetToken(token: string): User | PromiseLike<User | null> | null {
     throw new Error('Method not implemented.');
   }
@@ -43,7 +44,9 @@ export class UsersService {
   }
 
   async findUserByEmail(email: string): Promise<UserDocument | null> {
-    return await this.userModel.findOne({ email }).exec();
+    const lowercasedEmail = email.toLowerCase().trim(); // Trim and lowercase for search
+    console.log('Searching for email:', lowercasedEmail); // Debug log
+    return this.userModel.findOne({ email: lowercasedEmail }).exec();
   }
 
   async findUserById(id: string): Promise<UserDocument | null> {
@@ -54,7 +57,8 @@ export class UsersService {
     email: string,
     password: string,
   ): Promise<UserDocument | null> {
-    const user = await this.userModel.findOne({ email }).exec();
+    const lowercasedEmail = email.toLowerCase().trim(); // Consistent lowercasing
+    const user = await this.findUserByEmail(lowercasedEmail);
     if (user && (await bcrypt.compare(password, user.password))) {
       return user;
     }

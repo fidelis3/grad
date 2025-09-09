@@ -9,6 +9,8 @@ import {parse} from 'date-fns/parse';
 import {startOfWeek} from 'date-fns/startOfWeek';
 import {getDay} from 'date-fns/getDay';
 import { Line } from 'react-chartjs-2';
+import '../../globals.css';
+
 import {
   Chart as ChartJS,
   CategoryScale,

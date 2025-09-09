@@ -8,6 +8,7 @@ import {format} from 'date-fns/format';
 import {parse} from 'date-fns/parse';
 import {startOfWeek} from 'date-fns/startOfWeek';
 import {getDay} from 'date-fns/getDay';
+import '../../app/globals.css';
 
 const locales = {
   // eslint-disable-next-line @typescript-eslint/no-require-imports

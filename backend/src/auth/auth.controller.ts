@@ -23,14 +23,6 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginUserDto: LoginUserDto) {
-    return await this.authService.loginUser(loginUserDto);
-  }
-
-  @Post('doctor-login')
-  @HttpCode(HttpStatus.OK)
-  async doctorLogin(@Body() loginUserDto: LoginUserDto) {
-    // Convert DTO to individual params for loginDoctor
-    const { email, password } = loginUserDto;
-    return await this.authService.loginDoctor(email, password);
+    return await this.authService.loginUser(loginUserDto); // This line should work if service is correct
   }
 }

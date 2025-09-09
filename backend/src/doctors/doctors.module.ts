@@ -6,7 +6,6 @@ import { DoctorsService } from './doctors.service';
 import { Doctor, DoctorSchema } from './schemas/doctor.schema';
 import { UsersModule } from '../users/users.module';
 
-
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Doctor.name, schema: DoctorSchema }]),

@@ -48,10 +48,14 @@ describe('DoctorsService', () => {
       { patientId: 'patient2' },
     ]; // For count
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     mockUsersService.findById.mockResolvedValue(mockUser);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     mockDoctorModel.findOne.mockResolvedValue(mockDoctor as Doctor); // Typed as Doctor
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     mockAppointmentsService.findByDoctorId.mockResolvedValue(mockAppointments);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const result = await service.getDashboardData(mockUserId);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -70,7 +74,7 @@ describe('DoctorsService', () => {
 
   it('should throw ForbiddenException if not doctor', async () => {
     const mockUserId = new Types.ObjectId('507f1f77bcf86cd799439011');
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     mockUsersService.findById.mockResolvedValue({
       professionalRole: 'patient',
     });
@@ -80,4 +84,3 @@ describe('DoctorsService', () => {
     );
   });
 });
-

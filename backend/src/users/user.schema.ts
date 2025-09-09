@@ -24,7 +24,7 @@ export class User {
   @Prop({ required: true })
   fullName: string;
 
-  @Prop({ required: true, unique: true, lowercase: true })
+  @Prop({ required: true, unique: true, lowercase: true, trim: true }) // Lowercase and trim on save
   email: string;
 
   @Prop({

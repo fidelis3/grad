@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsOptional } from 'class-validator';
+import { IsString, IsOptional } from 'class-validator';
 
 export class CreateAppointmentDto {
   @IsOptional()
@@ -13,8 +13,8 @@ export class CreateAppointmentDto {
   @IsString()
   patientEmail?: string;
 
-  @IsNumber()
-  doctorId: number;
+  @IsString()
+  doctorId: string; // Changed to string
 
   @IsString()
   doctorName: string;
@@ -36,5 +36,5 @@ export class CreateAppointmentDto {
 
   @IsOptional()
   @IsString()
-  status?: string;
+  status?: string; // 'pending' default
 }

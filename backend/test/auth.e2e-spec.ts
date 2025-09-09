@@ -1,7 +1,7 @@
 // auth.e2e-spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
+import request from 'supertest';
 import { AppModule } from './../src/app.module';
 
 describe('Auth (e2e)', () => {
@@ -29,7 +29,7 @@ describe('Auth (e2e)', () => {
       .expect(201);
 
     // Type-safe access
-    expect((response.body as { accessToken: string }).accessToken).toBeDefined();
+    expect(response.body).toHaveProperty('accessToken');
   });
 
   afterAll(async () => {

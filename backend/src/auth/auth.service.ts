@@ -59,68 +59,117 @@ export class AuthService {
 
     const userData = {
       ...dto,
-      fullname: dto.fullName || '', 
+      fullname: dto.fullName || '',
       password: hashedPassword,
+      professionalRole: ProfessionalRole.DOCTOR,
     };
     const user = (await this.usersService.createUser(
       userData as RegisterUserDto,
     )) as UserDocument;
 
-    this.logger.log(`User created: ${user.email}`);
+    this.logger.log(
+      `User created: ${user.email} with role: ${user.professionalRole}`,
+    );
 
-    if (dto.professionalRole === ProfessionalRole.DOCTOR) {
-      await this.doctorsService.createDoctorProfile(
-        user._id.toString(),
-        dto.specialty || '',
-        dto.licenseNumber || '',
-        dto.experienceYears || 0,
-      );
-    }
+    await this.doctorsService.createDoctorProfile(
+      user._id.toString(),
+      dto.specialty || '',
+      dto.licenseNumber || '',
+      dto.experienceYears || 0,
+    );
 
     return this.createToken(user);
   }
 
+  async loginUser(loginUserDto: LoginUserDto) {
+    this.logger.log('Login attempt with:', loginUserDto);
+    const { email, password } = loginUserDto;
+
+    const user = (await this.usersService.validateUserCredentials(
+      email,
+      password,
+    )) as UserDocument | null;
+    this.logger.log(
+      'User found:',
+      user ? { email: user.email, _id: user._id } : 'null',
+    );
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    this.logger.log('Password valid:', isPasswordValid);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    const { password: userPassword, ...userResult } = user.toObject() as {
+      password: string;
+      [key: string]: any;
+    };
+
+    const payload = {
+      sub: user._id.toString(),
+      email: user.email,
+      professionalRole: user.professionalRole,
+    };
+
+    const accessToken = this.jwtService.sign(payload);
+    this.logger.log('Token generated:', accessToken);
+
+    return {
+      message: 'Login successful',
+      user: userResult,
+      accessToken,
+    };
+  }
+
   async loginDoctor(email: string, password: string) {
     this.logger.log(`Doctor login attempt for: ${email}`);
-    const user = (await this.usersService.findUserByEmail(email)) as UserDocument | null;
+    const user = await this.usersService.findUserByEmail(email);
     this.logger.log(
       'User found:',
       user
         ? { email: user.email, _id: user._id, role: user.professionalRole }
         : 'null',
     );
+
     if (!user || !(await bcrypt.compare(password, user.password))) {
       this.logger.warn(
         `Failed login attempt for ${email} - Password match: ${await bcrypt.compare(password, user?.password || '')}`,
       );
       throw new UnauthorizedException('Invalid credentials');
     }
+
     if (user.professionalRole !== ProfessionalRole.DOCTOR) {
       this.logger.warn(
         `Failed login attempt for ${email} - Role is ${user.professionalRole}, expected ${ProfessionalRole.DOCTOR}`,
       );
       throw new UnauthorizedException('Doctor access only');
     }
+
     const payload = {
       sub: user._id.toString(),
       email: user.email,
       professionalRole: user.professionalRole,
     };
+
     const accessToken = this.jwtService.sign(payload);
     this.logger.log('Token generated for doctor:', accessToken);
 
     return {
       message: 'Doctor login successful',
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       user: user.toObject(),
       accessToken,
     };
   }
 
-  
-
   async requestPasswordReset(requestDto: RequestPasswordResetDto) {
     const { email } = requestDto;
-    const resetToken = await this.usersService.generatePasswordResetToken(email);
+    const resetToken =
+      await this.usersService.generatePasswordResetToken(email);
 
     return {
       message: 'Password reset token generated successfully',
@@ -139,8 +188,7 @@ export class AuthService {
     await this.usersService.resetPassword(resetToken, newPassword);
 
     return {
-      message:
-        'Password reset successfully. You can now login with your new password.',
+      message: 'Password reset successfully. You can now login with your new password.',
     };
   }
 
