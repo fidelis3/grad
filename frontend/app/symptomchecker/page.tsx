@@ -1,8 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 
+type Message = {
+  sender: 'user' | 'ai';
+  text: string;
+  timestamp: string;
+};
+
+type ChatHistoryItem = {
+  id: string;
+  title: string;
+  date: string;
+};
+
+// --- SVG ICONS ---
 const MenuIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -31,12 +43,6 @@ const StarIcon = ({ className }: { className?: string }) => (
 const SendIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-  </svg>
-);
-
-const ArrowLeftIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
   </svg>
 );
 
@@ -122,33 +128,21 @@ export default function SymptomChecker() {
       
       <div className="w-full md:w-3/4 flex flex-col">
     
-        <div className="bg-white border-b border-gray-200 p-4 flex justify-between items-center">
-          <Link 
-            href="/PatientPortal"
-            className="flex items-center space-x-2 text-blue-900 hover:text-blue-700 transition-colors"
+        <div className="bg-white border-b border-gray-200 p-4 flex justify-end items-center space-x-3">
+          <button
+            onClick={handleDeleteChat}
+            className="p-2 text-gray-600 hover:text-red-600 transition-colors"
+            title="Delete Chat"
           >
-            <ArrowLeftIcon className="w-5 h-5" />
-            <span className="text-sm font-medium" style={{ fontFamily: 'var(--font-work-sans)' }}>
-              Back to Portal
-            </span>
-          </Link>
+            <DeleteIcon className="w-5 h-5" />
+          </button>
           
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={handleDeleteChat}
-              className="p-2 text-gray-600 hover:text-red-600 transition-colors"
-              title="Delete Chat"
-            >
-              <DeleteIcon className="w-5 h-5" />
-            </button>
-            
-            <button
-              className="pl-3 pr-12 py-2 bg-white border-4 border-blue-900 rounded-md text-blue-900 hover:bg-blue-50 transition-colors flex justify-start items-center"
-              title="Search"
-            >
-              <SearchIcon className="w-5 h-5" />
-            </button>
-          </div>
+          <button
+            className="pl-3 pr-12 py-2 bg-white border-4 border-blue-900 rounded-md text-blue-900 hover:bg-blue-50 transition-colors flex justify-start items-center"
+            title="Search"
+          >
+            <SearchIcon className="w-5 h-5" />
+          </button>
         </div>
 
 
