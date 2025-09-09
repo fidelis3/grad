@@ -37,7 +37,7 @@ export default function LoginPage() {
         setError('');
 
         try {
-            const response = await fetch('http://localhost:5000/auth/login', {
+            const response = await fetch('https://grad-ws97.onrender.com/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -55,8 +55,13 @@ export default function LoginPage() {
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
                 
-     
-                router.push('/PatientPortal');
+                console.log("User data from response:", data.user);
+                
+                if (data.user.professionalRole === 'doctor') {
+                    router.push('/doctor/dashboard');
+                } else {
+                    router.push('/PatientPortal');
+                }
             } else {
                 setError(data.message || 'Login failed. Please try again.');
             }

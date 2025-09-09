@@ -29,7 +29,7 @@ export default function PasswordReset() {
         setMessage('');
         
         try {
-            const response = await fetch('http://localhost:5000/auth/password-reset/request', {
+            const response = await fetch('https://grad-ws97.onrender.com/auth/password-reset/request', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -93,7 +93,7 @@ export default function PasswordReset() {
         }
 
         try {
-            const response = await fetch('http://localhost:5000/auth/password-reset/confirm', {
+            const response = await fetch('https://grad-ws97.onrender.com/auth/password-reset/confirm', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

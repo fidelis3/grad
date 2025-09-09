@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from langserve import add_routes
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 from typing import Dict, Any, Union
 
@@ -10,12 +11,27 @@ from .chains import (
     ClinicalCaseGeneratorChain,
     DoctorMasterChain,
     PatientMasterChain,
+    StudentMasterChain,
 )
 
 app = FastAPI(
     title="Medical Diagnosis Aid API",
     description="Provides direct-action and conversational AI endpoints for different user roles.",
     version="3.0.0",
+)
+
+origins = [
+    "https://grad-seven.vercel.app/",
+    "http://localhost:3000",
+    "http://localhost:3001",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -35,6 +51,10 @@ add_routes(
 
 add_routes(
     app, PatientMasterChain.with_types(input_type=ChatInput), path="/api/patient/chat"
+)
+
+add_routes(
+    app, StudentMasterChain.with_types(input_type=ChatInput), path="/api/student/chat"
 )
 
 

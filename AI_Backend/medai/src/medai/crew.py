@@ -200,3 +200,54 @@ class CaseGeneratorCrew:
             tasks=[self.case_generation_task()],
             verbose=True,
         )
+
+@CrewBase
+class ResearchCrew:
+    agents_config = 'config/student_agents.yaml'
+    tasks_config = 'config/student_tasks.yaml'
+
+    def __init__(self):
+        self.medical_retriever_tool = MedicalKnowledgeRetrieverTool()
+        self.pubmed_search_tool = PubMedSearchTool()
+        self.ahrq_search_tool = AHRQSearchTool()
+
+    @agent
+    def literature_review_agent(self) -> Agent:
+        return Agent(config=self.agents_config['literature_review_agent'], tools=[self.pubmed_search_tool], llm=get_llm("gemini-1.5-pro"), verbose=True)
+
+    @agent
+    def guideline_analyst_agent(self) -> Agent:
+        return Agent(config=self.agents_config['guideline_analyst_agent'], tools=[self.ahrq_search_tool, self.medical_retriever_tool], llm=get_llm("gemini-1.5-pro"), verbose=True)
+    
+    @agent
+    def summarization_agent(self) -> Agent:
+        return Agent(config=self.agents_config['summarization_agent'], llm=get_llm("gpt-4o"), verbose=True)
+
+        
+    @task
+    def literature_review_task(self) -> Task:
+        config = self.tasks_config['literature_review_task']
+        return Task(description=config['description'], agent=self.literature_review_agent(), expected_output=config['expected_output'])
+
+    @task
+    def guideline_analysis_task(self) -> Task:
+        config = self.tasks_config['guideline_analysis_task']
+        return Task(description=config['description'], agent=self.guideline_analyst_agent(), expected_output=config['expected_output'])
+        
+    @task
+    def deep_research_task(self) -> Task:
+        config = self.tasks_config['deep_research_task']
+        return Task(
+            description=config['description'],
+            agent=self.summarization_agent(),
+            expected_output=config['expected_output'],
+            context=[self.literature_review_task(), self.guideline_analysis_task()]
+        )
+        
+    @crew
+    def crew(self) -> Crew:
+        return Crew(
+            agents=[self.literature_review_agent(), self.guideline_analyst_agent(), self.summarization_agent()],
+            tasks=[self.literature_review_task(), self.guideline_analysis_task(), self.deep_research_task()],
+            verbose=True
+        )

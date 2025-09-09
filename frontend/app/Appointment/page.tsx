@@ -57,7 +57,7 @@ const doctors = [
 
 const specialties = ['All', 'Cardiology', 'Neurology', 'Dermatology', 'Orthopedics', 'Pediatrics', 'Internal Medicine', 'Gynecology', 'Psychiatry'];
 
-// Time slots
+
 const morningSlots = ['9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM'];
 const afternoonSlots = ['2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM', '4:30 PM'];
 
@@ -186,7 +186,7 @@ export default function AppointmentPage() {
 
       console.log('Sending appointment data:', appointmentData);
 
-      const response = await fetch('http://localhost:5000/api/appointments', {
+      const response = await fetch('https://grad-ws97.onrender.com/api/appointments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

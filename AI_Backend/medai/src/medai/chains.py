@@ -21,7 +21,7 @@ from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from .crew import MedaiCrew, PatientTriageCrew, CaseGeneratorCrew
+from .crew import MedaiCrew, PatientTriageCrew, CaseGeneratorCrew, ResearchCrew
 from .tools.custom_tool import MedicalKnowledgeRetrieverTool
 from .templates import (
     CONDENSE_QUESTION_PROMPT,
@@ -30,6 +30,8 @@ from .templates import (
     PATIENT_ROUTER_PROMPT,
     STUDENT_ROUTER_PROMPT,
     SAFETY_ROUTER_PROMPT,
+    QUIZ_GENERATOR_PROMPT,
+    FLASHCARD_GENERATOR_PROMPT,
 )
 
 
@@ -217,22 +219,40 @@ DoctorMasterChain = RunnableWithMessageHistory(
     history_messages_key="chat_history",
 )
 
-class PatientRouteQuery(BaseModel):
-    route: Literal["triage_request", "clarification_needed", "desperation_query", "rag_query", "greeting", "emotional_follow_up"]
 
-CRISIS_RESPONSE_TEXT = (
-    "It sounds like you are going through a difficult time. Please know that there is help available. "
-    "I am an AI assistant and not qualified to provide the support you need, but talking to someone can help. "
-    "Please consider reaching out to a crisis support hotline in your region. Help is available, and you don't have to go through this alone."
-)
-CrisisResponseChain = RunnableLambda(lambda _: {"output": CRISIS_RESPONSE_TEXT})
+class PatientRouteQuery(BaseModel):
+    route: Literal[
+        "triage_request",
+        "clarification_needed",
+        "desperation_query",
+        "rag_query",
+        "greeting",
+        "emotional_follow_up",
+    ]
 
 
 class SafetyRouteQuery(BaseModel):
-    route: Literal["safe_query", "off_topic_query", "dangerous_query", "self_harm_statement"]
+    route: Literal[
+        "safe_query", "off_topic_query", "dangerous_query", "self_harm_statement"
+    ]
 
-OffTopicResponseChain = RunnableLambda(lambda _: {"output": "I am a medical AI assistant and can only help with health-related questions. How can I assist you with a medical topic?"})
-DangerousQueryResponseChain = RunnableLambda(lambda _: {"output": "I cannot provide specific medical advice, cures, or prescriptions. For any medical treatment, it is essential to consult with a qualified healthcare professional. If you are in a crisis, please contact your local emergency services immediately."})
+
+CrisisResponseChain = RunnableLambda(
+    lambda _: {
+        "output": "I'm really sorry to hear that you're feeling this way. It might help to talk to a mental health professional who can provide the support you need. Remember, you're not alone, and there are people who care about you and want to help. If you're in immediate danger, please contact emergency services or a crisis hotline right away."
+    }
+)
+
+OffTopicResponseChain = RunnableLambda(
+    lambda _: {
+        "output": "I am a medical AI assistant and can only help with health-related questions. How can I assist you with a medical topic?"
+    }
+)
+DangerousQueryResponseChain = RunnableLambda(
+    lambda _: {
+        "output": "I cannot provide specific medical advice, cures, or prescriptions. For any medical treatment, it is essential to consult with a qualified healthcare professional. If you are in a crisis, please contact your local emergency services immediately."
+    }
+)
 
 GreetingChain = (
     ChatPromptTemplate.from_template(
@@ -252,11 +272,28 @@ ClarificationChain = (
     | RunnableLambda(lambda text: {"output": text})
 )
 
+ReassuranceChain = (
+    ChatPromptTemplate.from_template(
+        """You are a calm and reassuring medical assistant. The user is expressing fear or anxiety after receiving some information.
+        Your task is to provide a short, comforting, and safe response. Do not give new medical advice.
+        Focus on acknowledging their feelings and gently reminding them to speak with a doctor for definitive answers.
+
+        User's message: '{question}'
+        
+        Your reassuring response:"""
+    )
+    | openai_gpt4o_mini
+    | StrOutputParser()
+    | RunnableLambda(lambda text: {"output": text})
+)
+
+
 def create_reassurance_wrapper(triage_output: Dict) -> Dict:
     reassuring_intro = "I understand this is a worrying time, but I'm here to help you understand the next steps. It's important not to jump to conclusions, as many things can cause these symptoms. Here is some information based on what you've described:\n\n"
     final_report = triage_output.get("output", "")
     reassuring_outro = "\n\nPlease remember, this information is to help you, and the most important thing is to follow the 'Recommended Next Step'. A medical professional can give you a proper diagnosis. You are taking the right step by seeking information."
     return {"output": reassuring_intro + final_report + reassuring_outro}
+
 
 
 PatientRouterChain = PATIENT_ROUTER_PROMPT | openai_gpt4o.with_structured_output(
@@ -283,7 +320,182 @@ PatientBranch = RunnableBranch(
         lambda x: x["route"].route == "greeting",
         RunnableLambda(lambda x: {"question": x["input"]}) | GreetingChain,
     ),
+    (
+        lambda x: x["route"].route == "emotional_follow_up",
+        RunnableLambda(lambda x: {"question": x["input"]}) | ReassuranceChain,
+    ),
 
+    (
+        RunnablePassthrough.assign(
+            standalone_question=lambda x: (
+                CONDENSE_QUESTION_PROMPT | openai_gpt4o_mini | StrOutputParser()
+            ).invoke(x)
+        )
+        | RunnableLambda(lambda x: x["standalone_question"])
+        | SimpleRAGChain
+    ),
+)
+
+_patient_conversational_logic = (
+    RunnablePassthrough.assign(
+        route=RunnableLambda(
+            lambda x: {
+                "chat_history": get_buffer_string(x.get("chat_history", [])),
+                "question": x["input"],
+            }
+        )
+        | PatientRouterChain
+    )
+    | PatientBranch
+)
+
+SafetyRouterChain = SAFETY_ROUTER_PROMPT | openai_gpt4o.with_structured_output(
+    SafetyRouteQuery
+)
+SafetyBranch = RunnableBranch(
+    (lambda x: x["safety_route"].route == "self_harm_statement", CrisisResponseChain),
+    (lambda x: x["safety_route"].route == "off_topic_query", OffTopicResponseChain),
+    (
+        lambda x: x["safety_route"].route == "dangerous_query",
+        DangerousQueryResponseChain,
+    ),
+    _patient_conversational_logic,
+)
+
+_patient_master_chain_with_safety = (
+    RunnablePassthrough.assign(
+        safety_route=RunnableLambda(lambda x: {"question": x["input"]})
+        | SafetyRouterChain
+    )
+    | SafetyBranch
+)
+
+PatientMasterChain = RunnableWithMessageHistory(
+    _patient_master_chain_with_safety,
+    get_memory_for_session,
+    input_messages_key="input",
+    history_messages_key="chat_history",
+)
+
+
+class StudentRouteQuery(BaseModel):
+    route: Literal["deep_research", "summarize", "case_study", "rag_query"]
+
+
+class SummarizeInput(BaseModel):
+    text: str
+
+
+class SingleAgentRunnable(Runnable):
+    agent_name: str
+
+    def __init__(self, agent_name: str):
+        self.agent_name = agent_name
+
+    def invoke(self, input: str, config: RunnableConfig = None):
+        research_crew = ResearchCrew()
+
+        agent_function = getattr(research_crew, self.agent_name)
+        specific_agent = agent_function()
+
+        task = Task(
+            description=input,
+            agent=specific_agent,
+            expected_output="A concise, professional response to the user's request.",
+        )
+        result = task.execute()
+        return {"output": result}
+
+
+class StudentRouteQuery(BaseModel):
+    route: Literal[
+        "deep_research",
+        "case_study",
+        "summarize",
+        "quiz_generation",
+        "flashcard_generation",
+        "rag_query",
+    ]
+
+
+class SummarizeInput(BaseModel):
+    text_to_summarize: str
+
+
+class SingleAgentRunnable(Runnable):
+    """A Runnable to execute a single, specific agent from a crew."""
+
+    agent_name: str
+
+    def __init__(self, agent_name: str, crew_class):
+        self.agent_name = agent_name
+        self.crew_instance = crew_class()
+
+    def invoke(self, input: str, config: RunnableConfig = None):
+        agent_function = getattr(self.crew_instance, self.agent_name)
+        specific_agent = agent_function()
+        task = Task(
+            description=input,
+            agent=specific_agent,
+            expected_output="A concise and professional response.",
+        )
+        result = task.execute()
+        return {"output": result}
+
+
+QuizGeneratorChain = (
+    {"context": RunnableLambda(retriever.run), "topic": RunnablePassthrough()}
+    | QUIZ_GENERATOR_PROMPT
+    | gemini_pro
+    | StrOutputParser()
+    | RunnableLambda(lambda text: {"output": text})
+)
+
+FlashcardGeneratorChain = (
+    {"context": RunnableLambda(retriever.run), "topic": RunnablePassthrough()}
+    | FLASHCARD_GENERATOR_PROMPT
+    | gemini_pro
+    | StrOutputParser()
+    | RunnableLambda(lambda text: {"output": text})
+)
+
+
+StudentRouterChain = STUDENT_ROUTER_PROMPT | openai_gpt4o.with_structured_output(
+    StudentRouteQuery
+)
+
+StudentBranch = RunnableBranch(
+    (
+        lambda x: x["route"].route == "deep_research",
+        RunnableLambda(lambda x: {"topic": x["standalone_question"]})
+        | RunnableLambda(lambda inputs: ResearchCrew().crew().kickoff(inputs=inputs))
+        | RunnableLambda(lambda crew_output: {"output": crew_output.raw}),
+    ),
+    (
+        lambda x: x["route"].route == "case_study",
+        RunnableLambda(lambda x: {"medical_condition": x["standalone_question"]})
+        | ClinicalCaseGeneratorChain,
+    ),
+    (
+        lambda x: x["route"].route == "summarize",
+        RunnableLambda(lambda x: x["standalone_question"])
+        | SingleAgentRunnable(
+            agent_name="summarization_agent", crew_class=ResearchCrew
+        ),
+    ),
+    (
+        lambda x: x["route"].route == "quiz_generation",
+        RunnableLambda(lambda x: x["standalone_question"]) | QuizGeneratorChain,
+    ),
+    (
+        lambda x: x["route"].route == "flashcard_generation",
+        RunnableLambda(lambda x: x["standalone_question"]) | FlashcardGeneratorChain,
+    ),
+    RunnableLambda(lambda x: x["standalone_question"])
+    | SimpleRAGChain,  # Default for rag_query
+)
+
+_student_master_chain = (
     RunnablePassthrough.assign(
         standalone_question=lambda x: (
             CONDENSE_QUESTION_PROMPT | openai_gpt4o_mini | StrOutputParser()
@@ -294,38 +506,15 @@ PatientBranch = RunnableBranch(
             }
         )
     )
-    | RunnableLambda(lambda x: x["standalone_question"])
-    | SimpleRAGChain,
-)
-
-_patient_conversational_logic = (
-    RunnablePassthrough.assign(
-        standalone_question=lambda x: (
-            CONDENSE_QUESTION_PROMPT | openai_gpt4o_mini | StrOutputParser()
-        ).invoke({"chat_history": get_buffer_string(x.get('chat_history', [])), "question": x['input']})
+    | RunnablePassthrough.assign(
+        route=RunnableLambda(lambda x: {"question": x["standalone_question"]})
+        | StudentRouterChain
     )
-    | RunnablePassthrough.assign(route=RunnableLambda(lambda x: {"question": x["standalone_question"]}) | PatientRouterChain)
-    | PatientBranch
+    | StudentBranch
 )
 
-SafetyRouterChain = SAFETY_ROUTER_PROMPT | openai_gpt4o.with_structured_output(SafetyRouteQuery)
-
-SafetyBranch = RunnableBranch(
-    (lambda x: x["safety_route"].route == "self_harm_statement", CrisisResponseChain),
-    (lambda x: x["safety_route"].route == "off_topic_query", OffTopicResponseChain),
-    (lambda x: x["safety_route"].route == "dangerous_query", DangerousQueryResponseChain),
-    _patient_conversational_logic,
-)
-
-_patient_master_chain_with_safety = (
-    RunnablePassthrough.assign(
-        safety_route=RunnableLambda(lambda x: {"question": x["input"]}) | SafetyRouterChain
-    )
-    | SafetyBranch
-)
-
-PatientMasterChain = RunnableWithMessageHistory(
-    _patient_master_chain_with_safety,
+StudentMasterChain = RunnableWithMessageHistory(
+    _student_master_chain,
     get_memory_for_session,
     input_messages_key="input",
     history_messages_key="chat_history",

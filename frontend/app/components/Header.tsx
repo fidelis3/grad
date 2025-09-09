@@ -50,34 +50,34 @@ const Header: React.FC = () => {
   };
 
   const handleSectionNavigation = (sectionId: string) => {
-    // Check if we're on the landing page
+  
     if (window.location.pathname === '/LandingPage') {
-      // If we're on landing page, scroll to section
+      
       const element = document.getElementById(sectionId);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
       }
     } else {
-      // If we're not on landing page, navigate to landing page with section
+    
       router.push(`/LandingPage#${sectionId}`);
     }
     setIsMobileMenuOpen(false);
   };
 
   const handleHomeNavigation = () => {
-    // Home should always go to the onboarding page
+   
     router.push('/');
     setIsMobileMenuOpen(false);
   };
 
   return (
     <header className="w-full">
-      {/* Top Section */}
+    
       <div className="bg-white px-4 py-4 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             
-            {/* Logo */}
+        
             <div className="flex items-center justify-center lg:justify-start">
               <h1 className="text-2xl lg:text-3xl" style={{ fontFamily: 'var(--font-yeseva-one)' }}>
                 <span className="text-blue-900 font-normal">MED</span>
@@ -85,10 +85,10 @@ const Header: React.FC = () => {
               </h1>
             </div>
 
-            {/* Contact Info - Hidden on mobile, shown on larger screens */}
+        
             <div className="hidden lg:flex lg:items-center lg:space-x-8">
               
-              {/* Emergency */}
+            
               <div className="flex items-start space-x-2">
                 <PhoneIcon className="w-6 h-6 text-blue-900 mt-1" />
                 <div>
@@ -101,7 +101,7 @@ const Header: React.FC = () => {
                 </div>
               </div>
 
-              {/* Work Hours */}
+       
               <div className="flex items-start space-x-2">
                 <ClockIcon className="w-6 h-6 text-blue-900 mt-1" />
                 <div>
@@ -114,7 +114,7 @@ const Header: React.FC = () => {
                 </div>
               </div>
 
-              {/* Location */}
+        
               <div className="flex items-start space-x-2">
                 <MapPinIcon className="w-6 h-6 text-blue-900 mt-1" />
                 <div>
@@ -127,7 +127,7 @@ const Header: React.FC = () => {
                 </div>
               </div>
 
-              {/* Auth Buttons */}
+             
               <div className="flex space-x-3">
                 <button
                   onClick={() => handleNavigation('/Register')}
@@ -144,9 +144,9 @@ const Header: React.FC = () => {
               </div>
             </div>
 
-            {/* Mobile Contact Info */}
+          
             <div className="flex flex-col space-y-3 lg:hidden">
-              {/* Emergency */}
+          
               <div className="flex items-center justify-center space-x-2">
                 <PhoneIcon className="w-5 h-5 text-blue-900" />
                 <div className="text-center">
@@ -159,7 +159,7 @@ const Header: React.FC = () => {
                 </div>
               </div>
 
-              {/* Work Hours */}
+            
               <div className="flex items-center justify-center space-x-2">
                 <ClockIcon className="w-5 h-5 text-blue-900" />
                 <div className="text-center">
@@ -172,7 +172,7 @@ const Header: React.FC = () => {
                 </div>
               </div>
 
-              {/* Location */}
+         
               <div className="flex items-center justify-center space-x-2">
                 <MapPinIcon className="w-5 h-5 text-blue-900" />
                 <div className="text-center">
@@ -185,7 +185,7 @@ const Header: React.FC = () => {
                 </div>
               </div>
 
-              {/* Mobile Auth Buttons */}
+          
               <div className="flex justify-center space-x-3">
                 <button
                   onClick={() => handleNavigation('/Register')}
@@ -205,12 +205,12 @@ const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Navigation Section */}
+ 
       <nav className="bg-blue-900">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between h-16">
             
-            {/* Desktop Navigation */}
+          
             <div className="hidden lg:flex lg:items-center lg:space-x-8 lg:flex-1">
               <button
                 onClick={() => handleHomeNavigation()}
@@ -244,7 +244,7 @@ const Header: React.FC = () => {
               </button>
             </div>
 
-            {/* Desktop Appointment Button */}
+           
             <div className="hidden lg:block">
               <button
                 onClick={() => handleNavigation('/Register')}
@@ -254,7 +254,7 @@ const Header: React.FC = () => {
               </button>
             </div>
 
-            {/* Mobile menu button */}
+          
             <div className="lg:hidden flex items-center justify-between w-full">
               <span className="text-blue-100 font-semibold text-lg">Menu</span>
               <button
@@ -270,7 +270,7 @@ const Header: React.FC = () => {
             </div>
           </div>
 
-          {/* Mobile Navigation Menu */}
+         
           {isMobileMenuOpen && (
             <div className="lg:hidden">
               <div className="px-2 pt-2 pb-3 space-y-1 border-t border-blue-800">

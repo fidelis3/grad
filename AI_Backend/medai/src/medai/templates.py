@@ -32,52 +32,116 @@ DOCTOR_ROUTER_PROMPT = ChatPromptTemplate.from_messages([
 ])
 
 STUDENT_ROUTER_PROMPT = ChatPromptTemplate.from_messages([
-    ("system", """You are an expert at routing a student's or researcher's request.
-     You must select one of the following routes: 'case_study' for generating clinical case studies, or 'rag_query' for simple questions and explanations.
+    ("system", """You are an expert at routing a student or researcher's request to the correct workflow.
+     You must select one of the following routes: 'deep_research', 'case_study', 'summarize', 'quiz_generation', 'flashcard_generation', or 'rag_query'.
 
      --- EXAMPLES ---
-     User Query: "Create a case study about acute appendicitis." -> ROUTE: case_study
-     User Query: "What is the pathophysiology of Type 1 Diabetes?" -> ROUTE: rag_query
+     User Query: "Summarize the latest research on CRISPR for treating sickle cell anemia." -> ROUTE: deep_research
+     User Query: "Give me a case study on multiple sclerosis." -> ROUTE: case_study
+     User Query: "Summarize this for me: [text]" -> ROUTE: summarize
+     User Query: "Create a 5-question quiz on the Krebs cycle." -> ROUTE: quiz_generation
+     User Query: "Make me some flashcards for the main types of antibiotics." -> ROUTE: flashcard_generation
+     User Query: "Explain the pathophysiology of Parkinson's disease." -> ROUTE: rag_query
+     User Query: "Hello" -> ROUTE: rag_query 
      """),
     ("human", "{question}")
 ])
+
+QUIZ_GENERATOR_PROMPT = ChatPromptTemplate.from_template(
+    """You are a medical school professor creating a challenging, open-ended quiz for a medical student on the topic of '{topic}'.
+Your task is to create 3-5 thought-provoking questions that require clinical reasoning, not just simple recall. 
+After the questions, you MUST provide a separate section with detailed answers for comparison.
+
+--- EXAMPLE OF THE REQUIRED FORMAT ---
+**Topic:** Hypertension
+
+**Questions:**
+1. A 65-year-old patient on hydrochlorothiazide for hypertension presents with muscle weakness. What is the likely electrolyte imbalance, and what is the physiological mechanism?
+2. Why is an ACE inhibitor often a first-line choice for a patient with both hypertension and diabetes?
+
+---
+**Detailed Answers:**
+1. **Answer:** The likely imbalance is hypokalemia (low potassium). Thiazide diuretics increase the excretion of potassium in the urine, which can lead to depleted levels, causing muscle weakness.
+2. **Answer:** ACE inhibitors have a nephroprotective (kidney-protective) effect by reducing pressure in the glomeruli. This is particularly beneficial for patients with diabetes, who are at high risk for diabetic nephropathy.
+--- END OF EXAMPLE ---
+
+Now, using the provided context, generate a quiz in the same two-part format.
+
+Context:
+{context}
+
+Quiz:"""
+)
+
+
+FLASHCARD_GENERATOR_PROMPT = ChatPromptTemplate.from_template(
+    """You are an expert instructional designer creating clinical scenario-based flashcards for medical students on the topic of '{topic}'.
+The front of each card MUST be a patient presentation or clinical scenario. The back MUST be the most likely diagnosis or the next best step in management.
+
+--- EXAMPLE OF THE REQUIRED FORMAT ---
+**Front:** A 62-year-old male with a history of smoking and hyperlipidemia presents with 2 hours of crushing substernal chest pain and an ECG showing ST-segment elevation in the anterior leads (V1-V4).
+**Back:** Diagnosis: Acute Anterior STEMI (ST-Elevation Myocardial Infarction). The findings are indicative of an occlusion of the Left Anterior Descending (LAD) artery.
+--- END OF EXAMPLE ---
+
+Now, using the provided context, generate 5 flashcards in this format.
+
+Context:
+{context}
+
+Flashcards:"""
+)
 
 PATIENT_ROUTER_PROMPT = ChatPromptTemplate.from_messages([
-    ("system", """You are an expert at routing a patient's request to the correct workflow based on their intent.
-     You must select one of the following routes: 'triage_request', 'clarification_needed', 'desperation_query', 'rag_query', 'greeting', or 'emotional_follow_up'.
+    ("system", """You are an expert at routing a patient's request to the correct workflow 
+    based on their most recent message AND the conversation history.  
 
-     --- EXAMPLES ---
+    You must select exactly one of the following routes:  
+    - 'triage_request' → The user has provided enough specific symptoms that triage can proceed.  
+    - 'clarification_needed' → The user has been vague or has not given enough detail to begin triage.  
+    - 'desperation_query' → The user expresses fear, panic, or worry about their condition, even if they provide symptoms.  
+    - 'rag_query' → The user asks about a general medical or health topic (definitions, conditions, treatments, research).  
+    - 'greeting' → The user says hello, good morning, thanks, or something similar.  
+    - 'emotional_follow_up' → The user expresses emotions (scared, anxious, upset) in response to a previous assistant message.  
 
-     User Query: "I have had a sharp pain in my chest and my left arm feels numb."
-     Thought: The user has described specific, clear symptoms. This is a direct request for a symptom check.
-     ROUTE: triage_request
+    --- ROUTING PRINCIPLES ---
+    - A list of multiple specific symptoms (e.g. "itchy skin, diarrhea, vomiting, swollen legs") 
+      is a **triage_request**.  
+    - If the user only says something vague like "I feel sick" or "I don't feel good", 
+      classify as **clarification_needed**.  
+    - If they are both descriptive **and** scared ("I have chest pain and I'm terrified it's a heart attack"), 
+      classify as **desperation_query**.  
+    - Questions like "What is diabetes?" or "How does asthma work?" → **rag_query**.  
+    - "Hello", "Hi there", "Thanks" → **greeting**.  
+    - Emotional replies like "I'm scared" after your previous clarification → **emotional_follow_up**.  
 
-     User Query: "OMG! Am I going to die now?"
-     Thought: The user has already received a triage report and is now expressing fear and asking a follow-up question. This is not a new symptom report. I should route this to a simple, reassuring response chain.
-     ROUTE: emotional_follow_up
-     
-     User Query: "Hello there"
-     Thought: The user is just saying hello. This is a simple greeting.
-     ROUTE: greeting
+    --- EXAMPLES ---
+    User Query: "Hello there"  
+    ROUTE: greeting  
 
-     User Query: "I feel sick"
-     Thought: The user has stated a symptom but it is too vague. I need to ask for more information before I can proceed with a triage.
-     ROUTE: clarification_needed
+    User Query: "I feel sick"  
+    ROUTE: clarification_needed  
 
-     User Query: "I have had a sharp pain in my chest and my left arm feels numb."
-     Thought: The user has described specific, clear symptoms. This is a direct request for a symptom check.
-     ROUTE: triage_request
+    User Query: "What is diabetes?"  
+    ROUTE: rag_query  
 
-     User Query: "What is diabetes?"
-     Thought: The user is asking a general health question, not describing their own symptoms. This can be answered with a simple information retrieval.
-     ROUTE: rag_query
+    User Query: "I'm so scared."  
+    ROUTE: emotional_follow_up  
 
-     User Query: "Am I having a heart attack? I'm so scared."
-     Thought: The user is expressing fear and asking about a serious condition. This is a desperation query. I need to route this to the triage workflow, but also flag it for a reassuring response.
-     ROUTE: desperation_query
-     """),
+    User Query: "I have itchy skin, constant diarrhea for 3 days, vomiting, fatigue, and a swollen left leg."  
+    ROUTE: triage_request  
+
+    User Query: "I have chest pain and I think I'm going to die."  
+    ROUTE: desperation_query  
+
+    --- CONVERSATIONAL EXAMPLE ---
+    AI previously said: "Could you please tell me more about your symptoms?"  
+    User now says: "I've had chest pains, fatigue and dizziness for the past few days."  
+    Thought: This is specific enough to proceed with triage.  
+    ROUTE: triage_request  
+    """),
     ("human", "{question}")
 ])
+
 
 SAFETY_ROUTER_PROMPT = ChatPromptTemplate.from_messages([
     ("system", """You are a safety classification expert for a medical AI assistant.
