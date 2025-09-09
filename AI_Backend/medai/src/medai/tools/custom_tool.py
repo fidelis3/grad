@@ -1,65 +1,64 @@
 import os
 import chromadb
 from crewai.tools import BaseTool
-from typing import Type, Any
+from typing import Type, Any, Literal
 from pydantic import BaseModel, Field
 from chromadb.utils import embedding_functions
 
+
 class MedicalKnowledgeInput(BaseModel):
     """Input schema for the MedicalKnowledgeRetrieverTool."""
-    query: Any = Field(..., description="The medical topic or specific question to search for.")
+
+    query: str = Field(description="The medical topic to search for.")
+    collection_name: Literal["clinical_guidelines", "research_studies"] = Field(
+        description="The specific database collection to search in."
+    )
+
 
 class MedicalKnowledgeRetrieverTool(BaseTool):
     name: str = "Medical Knowledge Retriever"
     description: str = (
-        "A specialized tool for searching and retrieving information from a curated medical knowledge base. "
-        "Use this tool to find clinical guidelines, research papers, and established medical facts related to symptoms or diagnoses."
+        "Performs a hybrid search on a specified medical knowledge base collection. "
+        "Use 'clinical_guidelines' for standard-of-care questions. "
+        "Use 'research_studies' for questions about specific drugs or recent trials."
     )
     args_schema: Type[BaseModel] = MedicalKnowledgeInput
 
-    def _run(self, *args, **kwargs) -> str:
-        """
-        Connects to the ChromaDB vector store and performs a similarity search.
-        This method is now robust to handle any input format.
-        """
+    def _run(self, query: str, collection_name: str) -> str:
+        """Performs a hybrid search and returns formatted results."""
+        print(
+            f"INFO: Performing HYBRID SEARCH in '{collection_name}' for query: '{query}'"
+        )
 
-        query_input = kwargs.get('query', '')
-        if not query_input and args:
-            query_input = args[0]
-
-        if isinstance(query_input, dict):
-            search_query = query_input.get('query', query_input.get('description', ''))
-        else:
-            search_query = query_input
-
-        if not search_query or not isinstance(search_query, str):
-             return "Error: A valid search query string was not provided to the tool."
-
-        print(f"INFO: Searching medical knowledge base for query: '{search_query}'")
-        
         client = chromadb.PersistentClient(path="db")
         openai_ef = embedding_functions.OpenAIEmbeddingFunction(
-            api_key=os.getenv("OPENAI_API_KEY"),
-            model_name="text-embedding-3-small"
+            api_key=os.getenv("OPENAI_API_KEY"), model_name="text-embedding-3-small"
         )
-        collection = client.get_collection(name="medical_guidelines", embedding_function=openai_ef)
-
-        results = collection.query(
-            query_texts=[search_query],
-            n_results=3
+        collection = client.get_collection(
+            name=collection_name, embedding_function=openai_ef
         )
-        
-        return self._format_results(results)
 
-    def _format_results(self, results: dict) -> str:
-        """Helper function to format ChromaDB query results into a single string."""
-        documents = results.get('documents', [[]])[0]
-        
-        if not documents:
-            return "No relevant documents found in the medical knowledge base."
-        
+        vector_results = collection.query(query_texts=[query], n_results=3)
+        vector_docs = vector_results.get("documents", [[]])[0]
+
+        keyword_results = collection.query(
+            query_texts=[query],
+            n_results=3,
+            where_document={"$contains": query.split()[0]},
+        )
+        keyword_docs = keyword_results.get("documents", [[]])[0]
+
+        combined_docs = vector_docs + keyword_docs
+        unique_docs = list(dict.fromkeys(combined_docs))
+
+        if not unique_docs:
+            return f"No relevant documents found in the '{collection_name}' collection."
+
+        return self._format_results(unique_docs)
+
+    def _format_results(self, documents: list) -> str:
+        """Helper function to format document chunks into a single string."""
         formatted_string = ""
-        for i, doc in enumerate(documents):
-            formatted_string += f"Retrieved Document {i+1}:\n{doc}\n\n"
-            
+        for i, doc in enumerate(documents, 1):
+            formatted_string += f"Retrieved Document {i}:\n{doc}\n\n"
         return formatted_string.strip()
