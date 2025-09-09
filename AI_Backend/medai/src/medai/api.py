@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from langserve import add_routes
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 from typing import Dict, Any, Union
 
@@ -19,6 +20,15 @@ app = FastAPI(
     version="3.0.0",
 )
 
+origins = ["https://grad-seven.vercel.app/", "http://localhost:3000", "http://localhost:3001"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class ChatInput(BaseModel):
     input: Union[str, Dict[str, Any]]
