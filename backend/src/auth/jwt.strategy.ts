@@ -8,11 +8,15 @@ import { UsersService } from '../users/users.service';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly usersService: UsersService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
   ) {
-    const jwtSecret = configService.get<string>('JWT_SECRET') || 'your-super-secret-jwt-key';
-    console.log('🔐 JWT Strategy - Secret loaded:', !!configService.get<string>('JWT_SECRET') ? 'From ENV' : 'Using fallback');
-    
+    const jwtSecret =
+      configService.get<string>('JWT_SECRET') || 'your-super-secret-jwt-key';
+    console.log(
+      '🔐 JWT Strategy - Secret loaded:',
+      configService.get<string>('JWT_SECRET') ? 'From ENV' : 'Using fallback',
+    );
+
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -27,7 +31,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       throw new UnauthorizedException();
     }
-    
 
     const { password, ...result } = user.toObject();
     console.log('Returning user data:', result);

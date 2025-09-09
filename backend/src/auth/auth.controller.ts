@@ -1,35 +1,36 @@
-import { Controller, Post, Body, ValidationPipe, HttpStatus, HttpCode } from '@nestjs/common';
+import { Controller, Post, HttpCode, HttpStatus, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterUserDto } from '../users/dto/register-user.dto';
+import { RegisterDto } from '../doctors/dto/register.dto';
 import { LoginUserDto } from '../users/dto/login-user.dto';
-import { RequestPasswordResetDto } from '../users/dto/request-password-reset.dto';
-import { ResetPasswordDto } from '../users/dto/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private authService: AuthService) {}
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  async register(@Body(ValidationPipe) registerUserDto: RegisterUserDto) {
-    return await this.authService.register(registerUserDto);
+  async register(@Body() registerUserDto: RegisterUserDto) {
+    return await this.authService.registerUser(registerUserDto);
+  }
+
+  @Post('doctor-signup')
+  @HttpCode(HttpStatus.CREATED)
+  async doctorSignup(@Body() registerDto: RegisterDto) {
+    return await this.authService.registerDoctor(registerDto);
   }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body(ValidationPipe) loginUserDto: LoginUserDto) {
-    return await this.authService.login(loginUserDto);
+  async login(@Body() loginUserDto: LoginUserDto) {
+    return await this.authService.loginUser(loginUserDto);
   }
 
-  @Post('password-reset/request')
+  @Post('doctor-login')
   @HttpCode(HttpStatus.OK)
-  async requestPasswordReset(@Body(ValidationPipe) requestPasswordResetDto: RequestPasswordResetDto) {
-    return await this.authService.requestPasswordReset(requestPasswordResetDto);
-  }
-
-  @Post('password-reset/confirm')
-  @HttpCode(HttpStatus.OK)
-  async resetPassword(@Body(ValidationPipe) resetPasswordDto: ResetPasswordDto) {
-    return await this.authService.resetPassword(resetPasswordDto);
+  async doctorLogin(@Body() loginUserDto: LoginUserDto) {
+    // Convert DTO to individual params for loginDoctor
+    const { email, password } = loginUserDto;
+    return await this.authService.loginDoctor(email, password);
   }
 }

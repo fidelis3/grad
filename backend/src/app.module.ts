@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { AppointmentsModule } from './appointments/appointments.module';
+import {DoctorsModule} from './doctors/doctors.module';
 
 @Module({
   imports: [
@@ -15,22 +16,34 @@ import { AppointmentsModule } from './appointments/appointments.module';
     }),
     MongooseModule.forRootAsync({
       useFactory: async (configService: ConfigService) => {
-        const mongoUri = configService.get<string>('MONGO_URI') || 'mongodb://localhost:27017/defaultdb';
-        
+        const mongoUri =
+          configService.get<string>('MONGO_URI') ||
+          'mongodb://localhost:27017/defaultdb';
+
         console.log('🔍 Environment check:');
-        console.log('MONGO_URI exists:', !!configService.get<string>('MONGO_URI'));
-        console.log('MONGO_URI value:', configService.get<string>('MONGO_URI') ? 'Found' : 'Not found');
-        console.log('🔗 Using MongoDB connection:', mongoUri.includes('mongodb.net') ? 'Atlas (Cloud)' : 'Local');
-        
+        console.log(
+          'MONGO_URI exists:',
+          !!configService.get<string>('MONGO_URI'),
+        );
+        console.log(
+          'MONGO_URI value:',
+          configService.get<string>('MONGO_URI') ? 'Found' : 'Not found',
+        );
+        console.log(
+          '🔗 Using MongoDB connection:',
+          mongoUri.includes('mongodb.net') ? 'Atlas (Cloud)' : 'Local',
+        );
+
         return {
           uri: mongoUri,
         };
       },
       inject: [ConfigService],
     }),
-    UsersModule, 
+    UsersModule,
     AuthModule,
-    AppointmentsModule
+    DoctorsModule,
+    AppointmentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

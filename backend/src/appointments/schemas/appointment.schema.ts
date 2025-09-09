@@ -35,8 +35,8 @@ export class Appointment {
   @Prop({ required: true })
   reason: string;
 
-  @Prop({ required: true, default: 'confirmed' })
-  status: string;
+  @Prop({ type: Object }) // Optional report
+  report?: any;
 }
 
 export const AppointmentSchema = SchemaFactory.createForClass(Appointment);

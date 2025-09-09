@@ -1,4 +1,11 @@
-import { IsEmail, IsString, IsEnum, MinLength, Matches, IsNotEmpty } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  IsEnum,
+  MinLength,
+  Matches,
+  IsNotEmpty,
+} from 'class-validator';
 import { ProfessionalRole } from '../user.schema';
 
 export class RegisterUserDto {
@@ -11,14 +18,17 @@ export class RegisterUserDto {
   email: string;
 
   @IsNotEmpty({ message: 'Professional role is required' })
-  @IsEnum(ProfessionalRole, { message: 'Professional role must be either doctor or patient' })
+  @IsEnum(ProfessionalRole, {
+    message: 'Professional role must be either doctor or patient',
+  })
   professionalRole: ProfessionalRole;
 
   @IsNotEmpty({ message: 'Password is required' })
   @IsString({ message: 'Password must be a string' })
   @MinLength(6, { message: 'Password must be at least 6 characters long' })
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
-    message: 'Password must contain at least one lowercase letter, one uppercase letter, and one number',
+    message:
+      'Password must contain at least one lowercase letter, one uppercase letter, and one number',
   })
   password: string;
 
