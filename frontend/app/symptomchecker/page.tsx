@@ -115,8 +115,9 @@ export default function SymptomChecker() {
 
       setMessages(prev => [...prev, aiMessage]);
 
-    } catch (err: any) {
-      setError(err.message || 'An unknown error occurred.');
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'An unknown error occurred.';
+      setError(errorMsg);
       const errorMessage: Message = {
         sender: 'ai',
         text: 'Sorry, I seem to be having trouble connecting. Please try again later.',
