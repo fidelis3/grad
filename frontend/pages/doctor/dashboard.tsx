@@ -1,30 +1,48 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import axios from 'axios';
 import '../../app/globals.css';
 
+interface DashboardData {
+  user: {
+    fullname: string;
+    specialty: string;
+  };
+  appointmentCount: number;
+}
+
 const Dashboard: React.FC = () => {
   const router = useRouter();
-  const [dashboardData, setDashboardData] = useState<any>(null);
-  const token = localStorage.getItem('token');
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-  if (!token) router.push('/auth/doctor-signin');
-  else fetchDashboardData();
-}, [token, router, fetchDashboardData]);
+    // Only access localStorage on the client side
+    if (typeof window !== 'undefined') {
+      const storedToken = localStorage.getItem('token');
+      setToken(storedToken);
+    }
+  }, []);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
+    
+    
     try {
-      const res = await axios.get('http://localhost:5000/doctor/dashboard', {
+      const res = await axios.get('https://grad-ws97.onrender.com/doctor/dashboard', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setDashboardData(res.data);
+      setDashboardData(res.data as DashboardData);
     } catch (error) {
       console.error('Dashboard fetch error:', error);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {    
+      fetchDashboardData();
+  }, [ router, fetchDashboardData]);
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
@@ -33,10 +51,10 @@ const Dashboard: React.FC = () => {
         <h2 className="text-2xl font-bold mb-6">Meddical</h2>
         <nav>
           <ul className="space-y-4">
-            <li><a href="/doctor/dashboard" className="block hover:bg-blue-800 p-2 rounded">Dashboard</a></li>
-            <li><a href="/doctor/appointments" className="block hover:bg-blue-800 p-2 rounded">Appointments</a></li>
-            <li><a href="/doctor/ai-assistant" className="block hover:bg-blue-800 p-2 rounded">AI Assistant</a></li>
-            <li><a href="/doctor/settings" className="block hover:bg-blue-800 p-2 rounded">Settings</a></li>
+            <li><Link href="/doctor/dashboard" className="block hover:bg-blue-800 p-2 rounded">Dashboard</Link></li>
+            <li><Link href="/doctor/appointments" className="block hover:bg-blue-800 p-2 rounded">Appointments</Link></li>
+            <li><Link href="/doctor/ai-assistant" className="block hover:bg-blue-800 p-2 rounded">AI Assistant</Link></li>
+            <li><Link href="/doctor/settings" className="block hover:bg-blue-800 p-2 rounded">Settings</Link></li>
           </ul>
         </nav>
       </div>

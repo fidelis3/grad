@@ -15,7 +15,7 @@ const AIAassistant: React.FC = () => {
     setLoading(true);
     const token = localStorage.getItem('token');
     try {
-const res = await axios.post('http://localhost:5000/doctor/ai-assistant', { symptoms }, { headers: { Authorization: `Bearer ${token}` } });
+const res = await axios.post('https://grad-ws97.onrender.com/doctor/ai-assistant', { symptoms }, { headers: { Authorization: `Bearer ${token}` } });
 setResponse(res.data.response);
     } catch {
       setResponse('Error getting AI response');

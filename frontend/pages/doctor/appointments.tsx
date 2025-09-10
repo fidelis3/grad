@@ -31,9 +31,15 @@ interface Appointment {
   status: string;
 }
 
+interface CalendarEvent {
+  title: string;
+  start: Date;
+  end: Date;
+}
+
 const DoctorAppointments: React.FC = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [events, setEvents] = useState<unknown[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -44,7 +50,7 @@ const DoctorAppointments: React.FC = () => {
       router.push('/auth/doctor-signin');
       return;
     }
-    axios.get('http://localhost:5000/doctor/appointments', { headers: { Authorization: `Bearer ${token}` } })
+    axios.get('https://grad-ws97.onrender.com/doctor/appointments', { headers: { Authorization: `Bearer ${token}` } })
       .then(res => {
         const typedData = res.data as Appointment[];
         setAppointments(typedData);
@@ -64,7 +70,7 @@ const DoctorAppointments: React.FC = () => {
   const handleAcceptReject = async (id: string, status: 'accepted' | 'rejected') => {
     const token = localStorage.getItem('token');
     try {
-      await axios.put(`http://localhost:5000/doctor/appointments/${id}/accept-reject`, { status }, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.put(`https://grad-ws97.onrender.com/doctor/appointments/${id}/accept-reject`, { status }, { headers: { Authorization: `Bearer ${token}` } });
       setAppointments(prev => prev.map(app => app._id === id ? { ...app, status } : app)); // Update state
     } catch (err) {
       console.error('Error updating appointment:', err);
@@ -90,7 +96,13 @@ const DoctorAppointments: React.FC = () => {
           <button onClick={() => router.push('/doctor/dashboard')} className="bg-blue-900 text-white px-4 py-2 rounded">Dashboard</button>
         </div>
         {/* Calendar - Now with localizer */}
-        <Calendar localizer={localizer} events={events} startAccessor="start" endAccessor="end" style={{ height: 400 }} />
+        <Calendar 
+          localizer={localizer} 
+          events={events} 
+          startAccessor={(event: CalendarEvent) => event.start} 
+          endAccessor={(event: CalendarEvent) => event.end} 
+          style={{ height: 400 }} 
+        />
         {/* List */}
         <div className="mt-6">
           <h2 className="text-xl font-bold mb-4">Appointment List</h2>

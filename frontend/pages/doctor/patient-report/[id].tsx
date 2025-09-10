@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import '../../app/globals.css';
+import '../../../app/globals.css';
 
 interface ReportRow {
   testName: string;
@@ -40,7 +40,7 @@ const PatientReport: React.FC = () => {
       router.push('/auth/doctor-signin');
       return;
     }
-    axios.get(`http://localhost:5000/doctor/appointments/${id}/report`, { 
+    axios.get(`https://grad-ws97.onrender.com/doctor/appointments/${id}/report`, { 
       headers: { Authorization: `Bearer ${token}` } 
     })
       .then((res) => {
