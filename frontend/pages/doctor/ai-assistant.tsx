@@ -5,11 +5,11 @@ import axios from 'axios';
 import '../../app/globals.css';
 
 // ---------- API BASE ----------
-const API_BASE = 'http://127.0.0.1:8000';
+const API_BASE = 'https://medai-91bj.onrender.com';
 
 // ---------- Types ----------
 interface AIResponse {
-  output: string | Record<string, any>; // output can be string OR object
+  output: string | Record<string, unknown>; // output can be string OR object
 }
 
 interface Message {
@@ -19,9 +19,9 @@ interface Message {
 }
 
 // ---------- Helpers ----------
-const normalizeOutput = (output: any): string => {
+const normalizeOutput = (output: string | Record<string, unknown>): string => {
   if (typeof output === 'string') return output;
-  if (output?.content) return output.content;
+  if (output?.content) return output.content as string;
   if (output?.output) {
     return typeof output.output === 'string'
       ? output.output
@@ -135,7 +135,7 @@ const ChatWindow: React.FC<{ messages: Message[]; loading: boolean }> = ({
   }, [messages, loading]);
 
   return (
-    <div className="flex-1 h-[60vh] sm:h-[68vh] md:h-[72vh] lg:h-[74vh] overflow-y-scroll px-6 py-4 bg-gradient-to-b from-gray-50 to-white">
+    <div className="flex-1 overflow-y-auto px-6 py-4 bg-gradient-to-b from-gray-50 to-white">
       {messages.length === 0 && (
         <div className="flex flex-col items-center justify-center h-full">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center mb-4">
@@ -149,7 +149,7 @@ const ChatWindow: React.FC<{ messages: Message[]; loading: boolean }> = ({
             </svg>
           </div>
           <p className="text-gray-500 text-center max-w-md">
-            Welcome to your AI Health Assistant. Start by describing your patient's symptoms to
+            Welcome to your AI Health Assistant. Start by describing your patient&apos;s symptoms to
             begin the consultation.
           </p>
         </div>
@@ -364,9 +364,9 @@ const AIAassistant: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-4 border-b border-blue-700">
+      <div className="w-full max-w-6xl h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200 flex flex-col">
+        {/* Header - Add sticky positioning */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-4 border-b border-blue-700 sticky top-0 z-10">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -385,18 +385,22 @@ const AIAassistant: React.FC = () => {
           </div>
         </div>
 
-        {/* Chat Window */}
-        <ChatWindow messages={messages} loading={loading} />
+        {/* Chat Window - Update styles */}
+        <div className="flex-1 overflow-hidden flex flex-col">
+          <ChatWindow messages={messages} loading={loading} />
 
-        {/* Input Form */}
-        <SymptomForm
-          symptoms={symptoms}
-          setSymptoms={setSymptoms}
-          handleSubmit={handleSubmit}
-          handleReport={handleReport}
-          loading={loading}
-          hasMessages={messages.length > 0}
-        />
+          {/* Input Form - Add sticky positioning */}
+          <div className="sticky bottom-0 bg-white border-t border-gray-200">
+            <SymptomForm
+              symptoms={symptoms}
+              setSymptoms={setSymptoms}
+              handleSubmit={handleSubmit}
+              handleReport={handleReport}
+              loading={loading}
+              hasMessages={messages.length > 0}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
