@@ -9,7 +9,7 @@ const API_BASE = 'http://127.0.0.1:8000';
 
 // ---------- Types ----------
 interface AIResponse {
-  output: string;
+  output: string | Record<string, any>; // output can be string OR object
 }
 
 interface Message {
@@ -19,38 +19,47 @@ interface Message {
 }
 
 // ---------- Helpers ----------
+const normalizeOutput = (output: any): string => {
+  if (typeof output === 'string') return output;
+  if (output?.content) return output.content;
+  if (output?.output) {
+    return typeof output.output === 'string'
+      ? output.output
+      : JSON.stringify(output.output, null, 2);
+  }
+  return JSON.stringify(output, null, 2);
+};
+
 const analyzeSymptoms = async (symptoms: string, token: string | null) => {
   return axios.post<AIResponse>(
     `${API_BASE}/api/doctor/chat/invoke`,
     {
-      input: { input: symptoms },   // ✅ matches backend schema
-      config: { configurable: { session_id: "doctor_chat" } }, // can be empty if optional
-      kwargs: {}
+      input: { input: symptoms }, // ✅ matches backend schema
+      config: { configurable: { session_id: 'doctor_chat' } },
+      kwargs: {},
     },
     { headers: { Authorization: `Bearer ${token}` } }
   );
 };
-
 
 const generateReport = async (conversation: Message[], token: string | null) => {
   return axios.post<AIResponse>(
     `${API_BASE}/api/doctor/generate-report/invoke`,
     {
       input: {
-        symptoms: conversation.map(m => m.text).join("\n"),
-        duration: "unspecified",
-        severity: "unspecified",
-        medical_history: "unspecified",
-        additional_notes: "Generated from conversation",
-        current_date: new Date().toISOString().split("T")[0]
+        symptoms: conversation.map((m) => m.text).join('\n'),
+        duration: 'unspecified',
+        severity: 'unspecified',
+        medical_history: 'unspecified',
+        additional_notes: 'Generated from conversation',
+        current_date: new Date().toISOString().split('T')[0],
       },
       config: {},
-      kwargs: {}
+      kwargs: {},
     },
     { headers: { Authorization: `Bearer ${token}` } }
   );
 };
-
 
 // ---------- Components ----------
 const ChatMessage: React.FC<{ message: Message }> = ({ message }) => {
@@ -68,7 +77,7 @@ const ChatMessage: React.FC<{ message: Message }> = ({ message }) => {
           <div className="flex items-center mb-2">
             <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mr-2">
               <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <span className="text-xs font-medium text-gray-500">AI Assistant</span>
@@ -77,7 +86,6 @@ const ChatMessage: React.FC<{ message: Message }> = ({ message }) => {
         <p className={`text-sm leading-relaxed ${isUser ? 'text-white' : 'text-gray-800'}`}>
           {message.text}
         </p>
-        {/* Message tail */}
         <div
           className={`absolute top-3 w-3 h-3 transform rotate-45 ${
             isUser
@@ -96,7 +104,10 @@ const ReportMessage: React.FC<{ text: string }> = ({ text }) => (
       <div className="flex items-center mb-3">
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center mr-3">
           <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0h8v12H6V4z"/>
+            <path
+              fillRule="evenodd"
+              d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0h8v12H6V4z"
+            />
           </svg>
         </div>
         <div>
@@ -129,15 +140,21 @@ const ChatWindow: React.FC<{ messages: Message[]; loading: boolean }> = ({
         <div className="flex flex-col items-center justify-center h-full">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center mb-4">
             <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
             </svg>
           </div>
           <p className="text-gray-500 text-center max-w-md">
-            Welcome to your AI Health Assistant. Start by describing your patient's symptoms to begin the consultation.
+            Welcome to your AI Health Assistant. Start by describing your patient's symptoms to
+            begin the consultation.
           </p>
         </div>
       )}
-      
+
       <div className="max-w-4xl mx-auto">
         {messages.map((msg, idx) =>
           msg.type === 'report' ? (
@@ -146,25 +163,33 @@ const ChatWindow: React.FC<{ messages: Message[]; loading: boolean }> = ({
             <ChatMessage key={idx} message={msg} />
           )
         )}
-        
+
         {loading && (
           <div className="flex justify-start mb-4">
             <div className="relative bg-white rounded-2xl rounded-bl-md px-4 py-3 border border-gray-200 shadow-sm max-w-xs">
               <div className="flex items-center space-x-2">
                 <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  <div
+                    className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"
+                    style={{ animationDelay: '0ms' }}
+                  />
+                  <div
+                    className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"
+                    style={{ animationDelay: '150ms' }}
+                  />
+                  <div
+                    className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"
+                    style={{ animationDelay: '300ms' }}
+                  />
                 </div>
                 <span className="text-sm text-gray-500">Analyzing symptoms...</span>
               </div>
-              {/* Message tail */}
-              <div className="absolute top-3 w-3 h-3 transform rotate-45 bg-white border-r border-b border-gray-200 -left-1"/>
+              <div className="absolute top-3 w-3 h-3 transform rotate-45 bg-white border-r border-b border-gray-200 -left-1" />
             </div>
           </div>
         )}
       </div>
-      
+
       <div ref={bottomRef} />
     </div>
   );
@@ -195,17 +220,17 @@ const SymptomForm: React.FC<{
               target.style.height = target.scrollHeight + 'px';
             }}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();   // prevent newline
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
                 if (!loading && symptoms.trim()) {
-                  handleSubmit(e);    // trigger your submit
+                  handleSubmit(e);
                 }
               }
             }}
             aria-label="Symptoms input"
           />
         </div>
-        
+
         <button
           type="submit"
           disabled={loading || !symptoms.trim()}
@@ -213,22 +238,43 @@ const SymptomForm: React.FC<{
         >
           {loading ? (
             <>
-              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <svg
+                className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
               </svg>
               <span>Analyzing...</span>
             </>
           ) : (
             <>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                />
               </svg>
               <span>Send</span>
             </>
           )}
         </button>
-        
+
         <button
           type="button"
           onClick={handleReport}
@@ -236,7 +282,12 @@ const SymptomForm: React.FC<{
           className="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-xl hover:from-green-700 hover:to-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm font-medium flex items-center space-x-2"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
           </svg>
           <span>Generate Report</span>
         </button>
@@ -274,7 +325,8 @@ const AIAassistant: React.FC = () => {
 
     try {
       const res = await analyzeSymptoms(newMessage.text, token);
-      const aiMessage: Message = { sender: 'ai', text: res.data.output, type: 'chat' };
+      const aiText = normalizeOutput(res.data.output);
+      const aiMessage: Message = { sender: 'ai', text: aiText, type: 'chat' };
       setMessages((prev) => [...prev, aiMessage]);
     } catch (err) {
       setMessages((prev) => [
@@ -297,7 +349,8 @@ const AIAassistant: React.FC = () => {
 
     try {
       const res = await generateReport(messages, token);
-      const reportMessage: Message = { sender: 'ai', text: res.data.output, type: 'report' };
+      const reportText = normalizeOutput(res.data.output);
+      const reportMessage: Message = { sender: 'ai', text: reportText, type: 'report' };
       setMessages((prev) => [...prev, reportMessage]);
     } catch (err) {
       setMessages((prev) => [
@@ -317,7 +370,12 @@ const AIAassistant: React.FC = () => {
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                />
               </svg>
             </div>
             <div>

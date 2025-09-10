@@ -24,7 +24,7 @@ class MedicalKnowledgeRetrieverTool(BaseTool):
     )
     args_schema: Type[BaseModel] = MedicalKnowledgeInput
 
-    def _run(self, query: str, collection_name: str) -> str:
+    def _run(self, query: str, collection_name: str, **kwargs) -> str:
         """Performs a hybrid search and returns formatted results."""
         print(
             f"INFO: Performing HYBRID SEARCH in '{collection_name}' for query: '{query}'"
