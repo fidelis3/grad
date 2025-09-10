@@ -1,18 +1,17 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+
+import { useRouter } from 'next/navigation';
+
 import axios from 'axios';
 import { Calendar, dateFnsLocalizer, Event } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import {format} from 'date-fns/format';
-import {parse} from 'date-fns/parse';
-import {startOfWeek} from 'date-fns/startOfWeek';
-import {getDay} from 'date-fns/getDay';
-import '../../app/globals.css';
+import { format, parse, startOfWeek, getDay } from 'date-fns';
+import enUS from 'date-fns/locale/en-US';
+
 
 const locales = {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  'en-US': require('date-fns/locale/en-US'),
+  'en-US': enUS,
 };
 const localizer = dateFnsLocalizer({
   format,
@@ -31,27 +30,34 @@ interface Appointment {
   status: string;
 }
 
+interface CalendarEvent {
+  title: string;
+  start: Date;
+  end: Date;
+}
+
 const DoctorAppointments: React.FC = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [events, setEvents] = useState<unknown[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     if (!token) {
       router.push('/auth/doctor-signin');
       return;
     }
-    axios.get('http://localhost:5000/doctor/appointments', { headers: { Authorization: `Bearer ${token}` } })
+    axios.get(`${apiBase}/doctor/appointments`, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => {
         const typedData = res.data as Appointment[];
         setAppointments(typedData);
-        setEvents(typedData.map(app => ({ 
-          title: `${app.patientName} - ${app.status}`, 
-          start: new Date(app.date), 
-          end: new Date(new Date(app.date).getTime() + 60 * 60 * 1000) 
+        setEvents(typedData.map(app => ({
+          title: `${app.patientName} - ${app.status}`,
+          start: new Date(app.date),
+          end: new Date(new Date(app.date).getTime() + 60 * 60 * 1000)
         })));
       })
       .catch(err => {
@@ -62,10 +68,11 @@ const DoctorAppointments: React.FC = () => {
   }, [router]);
 
   const handleAcceptReject = async (id: string, status: 'accepted' | 'rejected') => {
-    const token = localStorage.getItem('token');
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     try {
-      await axios.put(`http://localhost:5000/doctor/appointments/${id}/accept-reject`, { status }, { headers: { Authorization: `Bearer ${token}` } });
-      setAppointments(prev => prev.map(app => app._id === id ? { ...app, status } : app)); // Update state
+      await axios.put(`${apiBase}/doctor/appointments/${id}/accept-reject`, { status }, { headers: { Authorization: `Bearer ${token}` } });
+      setAppointments(prev => prev.map(app => app._id === id ? { ...app, status } : app));
     } catch (err) {
       console.error('Error updating appointment:', err);
       setError('Failed to update appointment');
@@ -80,7 +87,7 @@ const DoctorAppointments: React.FC = () => {
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <h1 className="text-2xl font-bold mb-4">Appointments</h1>
         <div className="flex justify-between mb-4">
-          <button onClick={() => router.back()} className="bg-white text-black px-4 py-2 rounded border">Go Back</button>
+          <button onClick={() => router.back?.()} className="bg-white text-black px-4 py-2 rounded border">Go Back</button>
           <div className="flex space-x-2">
             <button className="bg-blue-900 text-white px-4 py-2 rounded">Today</button>
             <button className="bg-white text-black px-4 py-2 rounded border">Week</button>
@@ -89,7 +96,7 @@ const DoctorAppointments: React.FC = () => {
           </div>
           <button onClick={() => router.push('/doctor/dashboard')} className="bg-blue-900 text-white px-4 py-2 rounded">Dashboard</button>
         </div>
-        {/* Calendar - Now with localizer */}
+        {/* Calendar */}
         <Calendar localizer={localizer} events={events} startAccessor="start" endAccessor="end" style={{ height: 400 }} />
         {/* List */}
         <div className="mt-6">
