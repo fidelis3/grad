@@ -135,7 +135,7 @@ const ChatWindow: React.FC<{ messages: Message[]; loading: boolean }> = ({
   }, [messages, loading]);
 
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-4 bg-gradient-to-b from-gray-50 to-white">
+    <div className="flex-1 h-[60vh] sm:h-[68vh] md:h-[72vh] lg:h-[74vh] overflow-y-scroll px-6 py-4 bg-gradient-to-b from-gray-50 to-white">
       {messages.length === 0 && (
         <div className="flex flex-col items-center justify-center h-full">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center mb-4">
