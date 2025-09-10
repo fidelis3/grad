@@ -9,7 +9,7 @@ const API_BASE = 'http://127.0.0.1:8000';
 
 // ---------- Types ----------
 interface AIResponse {
-  response: string;
+  output: string;
 }
 
 interface Message {
@@ -21,19 +21,36 @@ interface Message {
 // ---------- Helpers ----------
 const analyzeSymptoms = async (symptoms: string, token: string | null) => {
   return axios.post<AIResponse>(
-    `${API_BASE}/api/doctor/chat`,
-    { symptoms },
+    `${API_BASE}/api/doctor/chat/invoke`,
+    {
+      input: { input: symptoms },   // ✅ matches backend schema
+      config: { configurable: { session_id: "doctor_chat" } }, // can be empty if optional
+      kwargs: {}
+    },
     { headers: { Authorization: `Bearer ${token}` } }
   );
 };
 
+
 const generateReport = async (conversation: Message[], token: string | null) => {
   return axios.post<AIResponse>(
-    `${API_BASE}/api/doctor/generate-report`,
-    { conversation },
+    `${API_BASE}/api/doctor/generate-report/invoke`,
+    {
+      input: {
+        symptoms: conversation.map(m => m.text).join("\n"),
+        duration: "unspecified",
+        severity: "unspecified",
+        medical_history: "unspecified",
+        additional_notes: "Generated from conversation",
+        current_date: new Date().toISOString().split("T")[0]
+      },
+      config: {},
+      kwargs: {}
+    },
     { headers: { Authorization: `Bearer ${token}` } }
   );
 };
+
 
 // ---------- Components ----------
 const ChatMessage: React.FC<{ message: Message }> = ({ message }) => {
@@ -177,6 +194,14 @@ const SymptomForm: React.FC<{
               target.style.height = 'auto';
               target.style.height = target.scrollHeight + 'px';
             }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();   // prevent newline
+                if (!loading && symptoms.trim()) {
+                  handleSubmit(e);    // trigger your submit
+                }
+              }
+            }}
             aria-label="Symptoms input"
           />
         </div>
@@ -249,7 +274,7 @@ const AIAassistant: React.FC = () => {
 
     try {
       const res = await analyzeSymptoms(newMessage.text, token);
-      const aiMessage: Message = { sender: 'ai', text: res.data.response, type: 'chat' };
+      const aiMessage: Message = { sender: 'ai', text: res.data.output, type: 'chat' };
       setMessages((prev) => [...prev, aiMessage]);
     } catch (err) {
       setMessages((prev) => [
@@ -272,7 +297,7 @@ const AIAassistant: React.FC = () => {
 
     try {
       const res = await generateReport(messages, token);
-      const reportMessage: Message = { sender: 'ai', text: res.data.response, type: 'report' };
+      const reportMessage: Message = { sender: 'ai', text: res.data.output, type: 'report' };
       setMessages((prev) => [...prev, reportMessage]);
     } catch (err) {
       setMessages((prev) => [
