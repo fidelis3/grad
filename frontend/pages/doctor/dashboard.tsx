@@ -11,9 +11,9 @@ const Dashboard: React.FC = () => {
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    if (!token) router.push('/auth/doctor-signin');
-    else fetchDashboardData();
-  }, [token, router]);
+  if (!token) router.push('/auth/doctor-signin');
+  else fetchDashboardData();
+}, [token, router, fetchDashboardData]);
 
   const fetchDashboardData = async () => {
     try {
