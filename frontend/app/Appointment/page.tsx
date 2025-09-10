@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 const PhoneIcon = () => (
   <svg width="41" height="39" viewBox="0 0 41 39" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -251,7 +252,7 @@ export default function AppointmentPage() {
               
               
               <div className="flex items-center justify-center lg:justify-start">
-                <h1 className="text-2xl lg:text-3xl" style={{ fontFamily: 'var(--font-yeseva-one)' }}>
+                <h1 className="text-2xl lg:text-3xl title">
                   <span className="text-blue-900 font-normal">MED</span>
                   <span className="text-blue-500 font-normal">DICAL</span>
                 </h1>
@@ -263,10 +264,10 @@ export default function AppointmentPage() {
                 <div className="flex items-start space-x-2">
                   <PhoneIcon />
                   <div>
-                    <p className="font-medium text-base text-blue-900" style={{ fontFamily: 'var(--font-work-sans)' }}>
+                    <p className="font-medium text-base text-blue-900 text-blue-900-font">
                       EMERGENCY
                     </p>
-                    <p className="font-medium text-base text-blue-500" style={{ fontFamily: 'var(--font-work-sans)' }}>
+                    <p className="font-medium text-base text-blue-500 text-blue-500-font">
                       (237) 681-812-255
                     </p>
                   </div>
@@ -276,10 +277,10 @@ export default function AppointmentPage() {
                 <div className="flex items-start space-x-2">
                   <ClockIcon />
                   <div>
-                    <p className="font-medium text-base text-blue-900" style={{ fontFamily: 'var(--font-work-sans)' }}>
+                    <p className="font-medium text-base text-blue-900 work-sans-font">
                       WORK HOUR
                     </p>
-                    <p className="font-medium text-base text-blue-500" style={{ fontFamily: 'var(--font-work-sans)' }}>
+                    <p className="font-medium text-base text-blue-500 text-blue-500-font">
                       09:00 - 20:00 Everyday
                     </p>
                   </div>
@@ -289,10 +290,10 @@ export default function AppointmentPage() {
                 <div className="flex items-start space-x-2">
                   <MapPinIcon />
                   <div>
-                    <p className="font-medium text-base text-blue-900" style={{ fontFamily: 'var(--font-work-sans)' }}>
+                    <p className="font-medium text-base text-blue-900 work-sans-font">
                       LOCATION
                     </p>
-                    <p className="font-medium text-base text-blue-500" style={{ fontFamily: 'var(--font-work-sans)' }}>
+                    <p className="font-medium text-base text-blue-500 text-blue-500-font">
                       Nairobi, Kenya
                     </p>
                   </div>
@@ -305,10 +306,10 @@ export default function AppointmentPage() {
                 <div className="flex items-center justify-center space-x-2">
                   <PhoneIcon />
                   <div className="text-center">
-                    <p className="font-medium text-sm text-blue-900" style={{ fontFamily: 'var(--font-work-sans)' }}>
+                    <p className="font-medium text-sm text-blue-900 text-blue-900-font">
                       EMERGENCY
                     </p>
-                    <p className="font-medium text-sm text-blue-500" style={{ fontFamily: 'var(--font-work-sans)' }}>
+                    <p className="font-medium text-sm text-blue-500 text-blue-500-font">
                       (237) 681-812-255
                     </p>
                   </div>
@@ -318,10 +319,10 @@ export default function AppointmentPage() {
                 <div className="flex items-center justify-center space-x-2">
                   <ClockIcon />
                   <div className="text-center">
-                    <p className="font-medium text-sm text-blue-900" style={{ fontFamily: 'var(--font-work-sans)' }}>
+                    <p className="font-medium text-sm text-blue-900 workSansFont">
                       WORK HOUR
                     </p>
-                    <p className="font-medium text-sm text-blue-500" style={{ fontFamily: 'var(--font-work-sans)' }}>
+                    <p className="font-medium text-sm text-blue-500 text-blue-500-font">
                       09:00 - 20:00 Everyday
                     </p>
                   </div>
@@ -331,10 +332,10 @@ export default function AppointmentPage() {
                 <div className="flex items-center justify-center space-x-2">
                   <MapPinIcon />
                   <div className="text-center">
-                    <p className="font-medium text-sm text-blue-900" style={{ fontFamily: 'var(--font-work-sans)' }}>
+                    <p className="font-medium text-sm text-blue-900 font-work-sans">
                       LOCATION
                     </p>
-                    <p className="font-medium text-sm text-blue-500" style={{ fontFamily: 'var(--font-work-sans)' }}>
+                    <p className="font-medium text-sm text-blue-500 font-work-sans">
                       Nairobi, Kenya
                     </p>
                   </div>
@@ -352,23 +353,20 @@ export default function AppointmentPage() {
               <div className="hidden lg:flex lg:items-center lg:space-x-8 lg:flex-1">
                 <button
                   onClick={() => router.push('/')}
-                  className="text-blue-100 font-normal text-lg hover:text-white transition-colors"
-                  style={{ fontFamily: 'var(--font-work-sans)' }}
+                  className="text-blue-100 font-normal text-lg hover:text-white transition-colors font-work-sans"
                 >
                   Home
                 </button>
                 <button
                   onClick={() => router.push('/PatientPortal')}
-                  className="text-blue-100 font-normal text-lg hover:text-white transition-colors"
-                  style={{ fontFamily: 'var(--font-work-sans)' }}
+                  className="text-blue-100 font-normal text-lg hover:text-white transition-colors button"
                 >
                   Portal
                 </button>
               
             <button
                 onClick={() => router.push('/News')}
-                className="text-blue-100 font-normal text-lg hover:text-white transition-colors"
-                style={{ fontFamily: 'var(--font-work-sans)' }}
+                className="text-blue-100 font-normal text-lg hover:text-white transition-colors font-work-sans"
             >
                 News
             </button>
@@ -430,7 +428,9 @@ export default function AppointmentPage() {
         
             <div className="mb-6">
               <label className="block text-sm font-medium text-black mb-2">Filter by Specialty</label>
+              <label htmlFor="filter-specialty" className="sr-only">Filter by Specialty</label>
               <select
+                id="filter-specialty"
                 value={filterSpecialty}
                 onChange={(e) => setFilterSpecialty(e.target.value)}
                 className="w-full max-w-xs px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
@@ -456,10 +456,12 @@ export default function AppointmentPage() {
                   }`}
                 >
                   <div className="flex items-center space-x-4">
-                    <img
+                    <Image
                       src={doctor.image}
                       alt={doctor.name}
-                      className="w-16 h-16 rounded-full object-cover"
+                      width={64}
+                      height={64}
+                      className="rounded-full object-cover"
                     />
                     <div>
                       <h3 className="font-semibold text-gray-900">{doctor.name}</h3>
@@ -633,9 +635,10 @@ export default function AppointmentPage() {
 
         
             <div className="mb-6">
-              <label className="block text-black font-medium mb-2">Appointment Type</label>
+              <label htmlFor="appointment-type" className="block text-black font-medium mb-2">Appointment Type</label>
               <div className="relative">
                 <select
+                  id="appointment-type"
                   value={appointmentType}
                   onChange={(e) => setAppointmentType(e.target.value)}
                   className="w-full px-3 py-2 bg-[#F4F4F4] border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none text-black"
