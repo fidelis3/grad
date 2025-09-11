@@ -75,8 +75,9 @@ export class DoctorService {
 
   async aiAssistant(symptoms: string) {
     // Simple mock (later integrate with AI)
-    return {
-      response: `Based on your symptoms: ${symptoms}, possible causes are ...`,
-    };
+    const response = await Promise.resolve(
+      `Based on your symptoms: ${symptoms}, possible causes are ...`,
+    );
+    return { response };
   }
 }

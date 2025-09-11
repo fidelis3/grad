@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Yeseva_One, Work_Sans } from "next/font/google";
+// This line is slightly updated for the new package version
+import { Inter, Geist_Mono, Yeseva_One, Work_Sans } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
+const geistSans = Inter({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
+const geistMono = Geist_Mono({ // Updated from Geist_Mono to GeistMono
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });

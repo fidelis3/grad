@@ -31,7 +31,7 @@ const Dashboard: React.FC = () => {
     
     
     try {
-      const res = await axios.get('https://grad-ws97.onrender.com/doctor/dashboard', {
+      const res = await axios.get('https://grad-ws97.onrender.com/api/doctor/dashboard', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setDashboardData(res.data as DashboardData);
