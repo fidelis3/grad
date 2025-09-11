@@ -28,10 +28,12 @@ const Dashboard: React.FC = () => {
   }, []);
 
   const fetchDashboardData = useCallback(async () => {
-    
+    // Prevent API call if the token hasn't been loaded from localStorage yet
+    if (!token) return; 
     
     try {
-      const res = await axios.get('https://grad-ws97.onrender.com/doctor/dashboard', {
+      // It's better practice to use your local backend for development
+      const res = await axios.get('http://localhost:5000/doctor/dashboard', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setDashboardData(res.data as DashboardData);
@@ -42,7 +44,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {    
       fetchDashboardData();
-  }, [ router, fetchDashboardData]);
+  }, [token, fetchDashboardData]); // Depend on token to refetch when it's available
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
@@ -64,15 +66,18 @@ const Dashboard: React.FC = () => {
         <header className="bg-white shadow-md p-4 mb-6 rounded-lg flex justify-between items-center">
           <h1 className="text-2xl font-bold text-blue-900">Dashboard</h1>
           <div>
-            {dashboardData?.user?.fullname && <span className="text-gray-700">Welcome, {dashboardData.user.fullname}</span>}
+            {/* --- CHANGE 1: Added optional chaining --- */}
+            <span className="text-gray-700">Welcome, {dashboardData?.user?.fullname}</span>
           </div>
         </header>
         <div className="bg-white p-6 rounded-lg shadow-md">
           {dashboardData ? (
             <>
               <h2 className="text-xl font-semibold mb-4">Overview</h2>
-              <p className="text-gray-700">Specialty: {dashboardData.user.specialty}</p>
-              <p className="text-gray-700">Pending Appointments: {dashboardData.appointmentCount}</p>
+              {/* --- CHANGE 2: Added optional chaining --- */}
+              <p className="text-gray-700">Specialty: {dashboardData?.user?.specialty}</p>
+              {/* --- CHANGE 3: Added optional chaining --- */}
+              <p className="text-gray-700">Pending Appointments: {dashboardData?.appointmentCount}</p>
             </>
           ) : (
             <p>Loading dashboard data...</p>
