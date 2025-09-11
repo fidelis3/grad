@@ -8,7 +8,7 @@ const geistSans = Inter({
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({ // Updated from Geist_Mono to GeistMono
+const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
