@@ -68,7 +68,7 @@ export default function SymptomChecker() {
 
   useEffect(() => {
     handleNewChat();
-  }, [handleNewChat]);
+  }, []);
 
   useEffect(() => {
     if (chatContainerRef.current) {
@@ -118,6 +118,7 @@ export default function SymptomChecker() {
       }
 
       const result = await response.json();
+      console.log("RESPONSE FROM AI BACKEND:", JSON.stringify(result, null, 2));
 
       const aiMessage: Message = {
         sender: 'ai',
