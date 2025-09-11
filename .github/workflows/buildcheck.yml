@@ -36,12 +36,12 @@ jobs:
           cache-dependency-path: ./backend/package.json
 
       - name: Install dependencies
-        run: npm install     
+        run: npm install      
         
       - name: Build project
         run: npm run build
 
-     
+      
 
   backend-test:
     runs-on: ubuntu-latest
@@ -66,7 +66,7 @@ jobs:
       - name: Run tests
         run: npm test
         
-     
+      
   frontend-build-and-lint:
     runs-on: ubuntu-latest
     defaults:
@@ -85,7 +85,8 @@ jobs:
           cache-dependency-path: ./frontend/package.json
 
       - name: Install dependencies
-        run: npm install
+
+        run: npm install --legacy-peer-deps
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
