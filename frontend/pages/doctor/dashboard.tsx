@@ -28,12 +28,11 @@ const Dashboard: React.FC = () => {
   }, []);
 
   const fetchDashboardData = useCallback(async () => {
-    // Prevent API call if the token hasn't been loaded from localStorage yet
+
     if (!token) return; 
     
     try {
-      // It's better practice to use your local backend for development
-      const res = await axios.get('http://localhost:5000/doctor/dashboard', {
+      const res = await axios.get('https://grad-ws97.onrender.com/doctor/dashboard', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setDashboardData(res.data as DashboardData);
@@ -42,9 +41,9 @@ const Dashboard: React.FC = () => {
     }
   }, [token]);
 
-  useEffect(() => {    
-      fetchDashboardData();
-  }, [token, fetchDashboardData]); // Depend on token to refetch when it's available
+  useEffect(() => {
+    fetchDashboardData();
+  }, [token, fetchDashboardData]);
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
