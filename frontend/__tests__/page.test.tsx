@@ -16,11 +16,13 @@ interface MockImageProps {
   [key: string]: unknown;
 }
 
+import NextImage from 'next/image';
+
 jest.mock('next/image', () => ({
   __esModule: true,
   default: (props: MockImageProps) => {
-    
-    return <img {...props} />;
+    const { src, alt, ...rest } = props;
+    return <NextImage src={src} alt={alt || ''} {...rest} />;
   },
 }));
 

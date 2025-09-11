@@ -89,7 +89,8 @@ class TriageCrewRunnable(Runnable):
 
 class DiagnosticCrewRunnable(Runnable):
     def invoke(self, input: Dict, config: RunnableConfig = None):
-        return MedaiCrew().crew().kickoff(inputs=input)
+        result = MedaiCrew().crew().kickoff(inputs=input)
+        return {"output": result.raw}
 
 
 class CaseGeneratorRunnable(Runnable):
