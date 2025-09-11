@@ -186,7 +186,7 @@ const AIAssistant: React.FC = () => {
               <Stethoscope className="w-5 h-5 text-sidebar-primary-foreground" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-sidebar-foreground">Doctor's Co-Pilot</h2>
+              <h2 className="text-xl font-bold text-sidebar-foreground">Doctor&apos;s Co-Pilot</h2>
               <p className="text-sm text-muted-foreground">AI Medical Assistant</p>
             </div>
           </div>
@@ -275,9 +275,9 @@ const AIAssistant: React.FC = () => {
                   <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                     <Stethoscope className="w-8 h-8 text-primary" />
                   </div>
-                  <h1 className="text-2xl font-bold text-foreground mb-2">Doctor's AI Co-Pilot</h1>
+                  <h1 className="text-2xl font-bold text-foreground mb-2">Doctor&apos;s AI Co-Pilot</h1>
                   <p className="text-balance max-w-md">
-                    Ask a clinical question, describe symptoms, or use the "Generate Full Report" feature for
+                    Ask a clinical question, describe symptoms, or use the &quot;Generate Full Report&quot; feature for
                     comprehensive analysis.
                   </p>
                 </div>

@@ -251,7 +251,7 @@ export default function AppointmentPage() {
               
               
               <div className="flex items-center justify-center lg:justify-start">
-                <h1 className="text-2xl lg:text-3xl" style={{ fontFamily: 'var(--font-yeseva-one)' }}>
+                <h1 className="text-2xl lg:text-3xl headerTitle">
                   <span className="text-blue-900 font-normal">MED</span>
                   <span className="text-blue-500 font-normal">DICAL</span>
                 </h1>
@@ -263,10 +263,10 @@ export default function AppointmentPage() {
                 <div className="flex items-start space-x-2">
                   <PhoneIcon />
                   <div>
-                    <p className="font-medium text-base text-blue-900" style={{ fontFamily: 'var(--font-work-sans)' }}>
+                    <p className="font-medium text-base text-blue-900 fontWorkSans">
                       EMERGENCY
                     </p>
-                    <p className="font-medium text-base text-blue-500" style={{ fontFamily: 'var(--font-work-sans)' }}>
+                    <p className="font-medium text-base text-blue-500 text-blue-500-font-work-sans">
                       (237) 681-812-255
                     </p>
                   </div>
@@ -430,7 +430,9 @@ export default function AppointmentPage() {
         
             <div className="mb-6">
               <label className="block text-sm font-medium text-black mb-2">Filter by Specialty</label>
+              <label htmlFor="specialtyFilter" className="block text-sm font-medium text-black mb-2">Filter by Specialty</label>
               <select
+                id="specialtyFilter"
                 value={filterSpecialty}
                 onChange={(e) => setFilterSpecialty(e.target.value)}
                 className="w-full max-w-xs px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
@@ -636,6 +638,7 @@ export default function AppointmentPage() {
               <label className="block text-black font-medium mb-2">Appointment Type</label>
               <div className="relative">
                 <select
+                  title="Appointment Type"
                   value={appointmentType}
                   onChange={(e) => setAppointmentType(e.target.value)}
                   className="w-full px-3 py-2 bg-[#F4F4F4] border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none text-black"
