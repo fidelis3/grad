@@ -21,7 +21,12 @@ app = FastAPI(
 )
 
 origins = [
-    "*"
+    "http://localhost:3000",
+    "http://localhost:3000/doctor/ai-assistant",
+    "http://localhost:8000",
+    "https://grad-seven.vercel.app",
+    "https://grad-seven.vercel.app/symptomchecker",
+    "https://grad-seven.vercel.app/doctor/ai-assistant"
 ]
 
 app.add_middleware(
