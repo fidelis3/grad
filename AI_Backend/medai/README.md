@@ -152,9 +152,9 @@ MedAI is designed to operate through automated, role-specific workflows powered 
 
   *1. The flow begins in the patient's chat UI. The user decides they want to book an appointment and uses the UI to switch modes.*
 
-    *User Action:* The user clicks the "Appointment" button in the sidebar.
+   *User Action:* The user clicks the "Appointment" button in the sidebar.
 
-    *Frontend Action:* The onClick handler calls setMode('appointment'), instantly changing the UI's state. The "Appointment" button is now highlighted, and the text input placeholder changes to prompt for booking information.
+   *Frontend Action:* The onClick handler calls setMode('appointment'), instantly changing the UI's state. The "Appointment" button is now highlighted, and the text input placeholder changes to prompt for booking information.
 
   *2. Step 2: The First Interaction with the Booking AI*
    Now that the UI is in "Appointment" mode, the conversation is rerouted to the specialized n8n agent.
@@ -166,6 +166,8 @@ MedAI is designed to operate through automated, role-specific workflows powered 
    *Backend Action:* The proxy endpoint securely forwards the message to the n8n webhook, initiating the conversation with the booking specialist.
 
    *Result:* The n8n AI receives its first message, follows its prompt (Booking Process, Step 1), and responds by asking the user to select a doctor from the available options.
+    
+  ![alt text](<MEDDICAL - Medical Services - Google Chrome 12_09_2025 16_54_47.png>)
 
   *3. Step 3: The Conversational Booking Process (n8n)*
    The user is now in a direct, stateful conversation with the n8n Appointment Booking AI. The AI uses its memory and tools to guide the user through the process.
@@ -177,26 +179,38 @@ MedAI is designed to operate through automated, role-specific workflows powered 
   *4. Step 4: Tool Use - Checking Availability*
    The conversation continues, with the n8n agent using its tools to interact with real-world services.
 
-    *User Input:* "today 6-7pm"
+   *User Input:* "today 6-7pm"
 
-    *n8n Action:* The agent receives the time request. It uses its specialized "Check Availability" tool, which makes a  live API call to the doctor's Google Calendar to see if the 6-7 PM slot is free. The tool confirms availability and reports back to the agent.
+  ![alt text](image-4.png)
 
-    *Result:* The AI uses this information to formulate its final confirmation request to the user.
+   *n8n Action:* The agent receives the time request. It uses its specialized "Check Availability" tool, which makes a  live API call to the doctor's Google Calendar to see if the 6-7 PM slot is free. The tool confirms availability and reports back to the agent.
+
+   *Result:* The AI uses this information to formulate its final confirmation request to the user.
+
+  ![alt text](image-5.png)
 
   *5. Step 5: The Automation Climax (Final Confirmation)*
     The user gives their final confirmation, triggering the workflow's automated actions.
 
-    *User Input:* "Yes"
+   *User Input:* "Yes"
 
-    *n8n Action:* The n8n agent receives the final confirmation and executes its full suite of action-oriented tools in  sequence:
+   *n8n Action:* The n8n agent receives the final confirmation and executes its full suite of action-oriented tools in  sequence:
 
-    It uses the *"Create Event"* tool to book the appointment on Google Calendar.
+  ![alt text](image-6.png)
 
-    It uses the *"Add Data"* tool to log the appointment details in a Google Sheet.
+   It uses the *"Create Event"* tool to book the appointment on Google Calendar.
 
-    It uses its *email tools* to send out formatted confirmation emails to both the patient and the doctor.
+   It uses the *"Add Data"* tool to log the appointment details in a Google Sheet.
 
-    *Result:* The n8n agent sends its final, formatted confirmation message back to the user in the chat UI, completing the process.
+   https://docs.google.com/spreadsheets/d/1nbs-doVS2gVJ0PLfA9qFRL5IOXJek7r9Me7sPHvgsV8/edit?usp=sharing
+
+   It uses its *email tools* to send out formatted confirmation emails to both the patient and the doctor.
+
+   ![alt text](image-3.png)
+
+   ![alt text](image-2.png)
+
+   *Result:* The n8n agent sends its final, formatted confirmation message back to the user in the chat UI, completing the process.
 
 5. **Persistence & Monitoring**  
    All conversations are tracked using session IDs, ensuring continuity across multiple messages. Logs are maintained for audit, research, and debugging purposes.
@@ -233,6 +247,19 @@ Request Body:
   }
 }
 ```
+The endpoint uses a routing mechanism to pin the query to the most appropriate execution.
+
+A simple query is handled by the LLM.
+
+![alt text](image-1.png)
+
+A symptom input triggers the crew
+
+![alt text](<MEDDICAL - Medical Services - Google Chrome 12_09_2025 18_00_07.png>)
+
+![alt text](<MEDDICAL - Medical Services - Google Chrome 12_09_2025 17_53_48.png>)
+
+![alt text](<MEDDICAL - Medical Services - Google Chrome 12_09_2025 18_00_18.png>)
 
 #### 3. Crisis Reporting (Automated via n8n)  
 `POST /api/patient/crisis-report`
@@ -268,6 +295,8 @@ Request Body:
   }
 }
 ```
+Direclty triggers the crew for report generation
+
 
 #### 2. Conversational Doctor Chat  
 `POST /api/doctor/chat/invoke`
@@ -281,6 +310,8 @@ Request Body:
   }
 }
 ```
+
+Uses the same routing mechanism as the api/patient/chat/invoke.
 
 ---
 
