@@ -59,30 +59,30 @@ class CaseGeneratorInput(BaseModel):
 class DoctorRouteQuery(BaseModel):
     route: Literal["report_generation", "rag_query"]
 
-
 class TriageCrewRunnable(Runnable):
     def invoke(self, input: Dict, config: RunnableConfig = None):
         crew_inputs = {"symptoms": input["symptom_description"]}
         result = PatientTriageCrew().crew().kickoff(inputs=crew_inputs)
         report_text = result.raw
-
-        if "monitor" in report_text.lower():
-            print("INFO: 'Monitor' detected. Triggering n8n follow-up workflow.")
-
-            n8n_webhook_url = (
-                "https://nutnell.app.n8n.cloud/webhook-test/webhook-trigger"
-            )
-
-            payload = {
-                "patient_id": "user_123",
-                "symptoms": input["symptom_description"],
-                "recommendation": report_text,
-            }
-            try:
-                requests.post(n8n_webhook_url, json=payload)
-                print("INFO: Successfully triggered n8n workflow.")
-            except Exception as e:
-                print(f"ERROR: Failed to trigger n8n workflow. Error: {e}")
+        
+        recommendation = report_text.lower()
+        if "schedule an appointment" in recommendation or "see a doctor" in recommendation or "emergency services" in recommendation or "nearest emergency room" in recommendation:
+            n8n_webhook_url = os.getenv("N8N_APPOINTMENT_WEBHOOK_URL")
+            
+            if n8n_webhook_url:
+                print("INFO: Appointment recommendation detected. Triggering n8n booking workflow.")
+                payload = {
+                    "patient_id": "user_123",
+                    "symptoms": input['symptom_description'],
+                    "recommendation": report_text
+                }
+                try:
+                    requests.post(n8n_webhook_url, json=payload)
+                    print("INFO: Successfully triggered n8n booking workflow.")
+                except Exception as e:
+                    print(f"ERROR: Failed to trigger n8n booking workflow. Error: {e}")
+            else:
+                print("WARNING: N8N_APPOINTMENT_WEBHOOK_URL not set. Cannot trigger workflow.")
 
         return {"output": report_text}
 
@@ -102,6 +102,7 @@ PatientTriageChain = TriageCrewRunnable().with_types(input_type=TriageInput)
 DiagnosticConversationChain = DiagnosticCrewRunnable().with_types(
     input_type=DiagnosticInput
 )
+
 ClinicalCaseGeneratorChain = CaseGeneratorRunnable().with_types(
     input_type=CaseGeneratorInput
 )
@@ -238,10 +239,17 @@ class SafetyRouteQuery(BaseModel):
     ]
 
 
-CrisisResponseChain = RunnableLambda(
-    lambda _: {
-        "output": "I'm really sorry to hear that you're feeling this way. It might help to talk to a mental health professional who can provide the support you need. Remember, you're not alone, and there are people who care about you and want to help. If you're in immediate danger, please contact emergency services or a crisis hotline right away."
-    }
+CrisisInterventionChain = (
+    ChatPromptTemplate.from_template(
+        """You are a deeply empathetic and calm mental health first responder. The user has said something concerning: '{question}'.
+        Your task is to generate a single, comforting message that encourages them to seek help, and then offer to connect them with a professional.
+        Do not give advice. Focus on validation and offering a concrete next step."""
+    )
+    | openai_gpt4o_mini
+    | StrOutputParser()
+    | RunnableLambda(
+        lambda text: {"action": "collect_crisis_details", "empathetic_message": text}
+    )
 )
 
 OffTopicResponseChain = RunnableLambda(
@@ -296,7 +304,6 @@ def create_reassurance_wrapper(triage_output: Dict) -> Dict:
     return {"output": reassuring_intro + final_report + reassuring_outro}
 
 
-
 PatientRouterChain = PATIENT_ROUTER_PROMPT | openai_gpt4o.with_structured_output(
     PatientRouteQuery
 )
@@ -325,7 +332,6 @@ PatientBranch = RunnableBranch(
         lambda x: x["route"].route == "emotional_follow_up",
         RunnableLambda(lambda x: {"question": x["input"]}) | ReassuranceChain,
     ),
-
     (
         RunnablePassthrough.assign(
             standalone_question=lambda x: (
@@ -353,8 +359,12 @@ _patient_conversational_logic = (
 SafetyRouterChain = SAFETY_ROUTER_PROMPT | openai_gpt4o.with_structured_output(
     SafetyRouteQuery
 )
+
 SafetyBranch = RunnableBranch(
-    (lambda x: x["safety_route"].route == "self_harm_statement", CrisisResponseChain),
+    (
+        lambda x: x["safety_route"].route == "self_harm_statement",
+        RunnableLambda(lambda x: {"question": x["input"]}) | CrisisInterventionChain,
+    ),
     (lambda x: x["safety_route"].route == "off_topic_query", OffTopicResponseChain),
     (
         lambda x: x["safety_route"].route == "dangerous_query",

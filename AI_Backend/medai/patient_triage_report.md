@@ -1,17 +1,20 @@
 ## Understanding Your Symptoms
 
-You are experiencing severe headaches, dizziness, blurry vision, and your skin is turning yellowish (jaundice).  These symptoms can sometimes occur together and may indicate an underlying health issue.
+You are experiencing severe chest pain, difficulty breathing, and swelling in your legs. These symptoms can sometimes occur together and may indicate a serious health issue.
 
 ## What This Might Mean
 
-Several different things can cause these kinds of symptoms. Some possibilities include:
+Several factors can cause these symptoms, including:
 
-* Problems related to liver function
-* Issues with blood circulation or blood cell health.
-* Infections.
+* **Cardiovascular issues:** Problems with the heart and blood vessels.
+* **Respiratory problems:** Conditions affecting the lungs and airways.
+* **Circulatory issues:** Difficulties with blood flow throughout the body.
+* **Fluid imbalances:** An abnormal buildup of fluid in the body.
+
 
 ## Recommended Next Step
 
-These symptoms warrant a doctor's evaluation. Please schedule an appointment with your physician as soon as possible so they can properly assess your condition and provide the appropriate care.
+These symptoms require immediate medical attention.  **Please call emergency services (like 911) or go to the nearest emergency room right away.**
+
 
 This is for informational purposes only and is not a substitute for professional medical advice.
